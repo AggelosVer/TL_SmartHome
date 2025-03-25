@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Home - Devices</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #4CAF50;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    main {
+      padding: 20px;
+    }
+    #addDeviceButton {
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    /* Grid layout for device tiles */
+    #devicesList {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .device-card {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .device-card h3 {
+      margin: 0 0 5px;
+      font-size: 1.2em;
+    }
+    .device-card p {
+      margin: 5px 0;
+    }
+    .control {
+      margin-top: 10px;
+    }
+    .toggle-button {
+      background: #ccc;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .toggle-button.active {
+      background: #4CAF50;
+      color: white;
+    }
+    .refresh-button {
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .slider {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Smart Home Devices</h1>
+  </header>
+  <main>
+    <button id="addDeviceButton">Add New Device</button>
+    <div id="devicesList"></div>
+  </main>
+  <script>
+    // Load devices from local storage and display them in tiles
+    function loadDevices() {
+      const devices = JSON.parse(localStorage.getItem('devices')) || [];
+      const devicesList = document.getElementById('devicesList');
+      devicesList.innerHTML = '';
+      devices.forEach((device, index) => {
+        const card = document.createElement('div');
+        card.className = 'device-card';
+        
+        // Basic device info
+        let content = `<h3>${device.name}</h3><p>Type: ${device.type}</p>`;
+        
+        // Add control based on device type
+        if (device.type.toLowerCase() === 'light') {
+          content += `<div class="control">
+                        <button class="toggle-button" id="light-${index}">Off</button>
+                      </div>`;
+        } else if (device.type.toLowerCase() === 'thermostat') {
+          content += `<div class="control">
+                        <label for="thermostat-${index}">Temperature: <span id="temp-value-${index}">70°F</span></label>
+                        <input type="range" min="60" max="80" value="70" class="slider" id="thermostat-${index}">
+                      </div>`;
+        } else if (device.type.toLowerCase() === 'camera') {
+          content += `<div class="control">
+                        <button class="refresh-button" id="camera-${index}">Refresh Feed</button>
+                        <span id="camera-status-${index}" style="margin-left:10px;">Idle</span>
+                      </div>`;
+        }
+        
+        card.innerHTML = content;
+        devicesList.appendChild(card);
+        
+        // Set up control event listeners
+        if (device.type.toLowerCase() === 'light') {
+          const lightBtn = document.getElementById(`light-${index}`);
+          lightBtn.addEventListener('click', () => {
+            // Toggle light state
+            lightBtn.classList.toggle('active');
+            lightBtn.textContent = lightBtn.classList.contains('active') ? 'On' : 'Off';
+          });
+        } else if (device.type.toLowerCase() === 'thermostat') {
+          const thermostatSlider = document.getElementById(`thermostat-${index}`);
+          const tempValue = document.getElementById(`temp-value-${index}`);
+          thermostatSlider.addEventListener('input', () => {
+            tempValue.textContent = thermostatSlider.value + '°F';
+          });
+        } else if (device.type.toLowerCase() === 'camera') {
+          const cameraBtn = document.getElementById(`camera-${index}`);
+          const cameraStatus = document.getElementById(`camera-status-${index}`);
+          cameraBtn.addEventListener('click', () => {
+            cameraStatus.textContent = 'Refreshing...';
+            // Simulate a refresh delay
+            setTimeout(() => {
+              cameraStatus.textContent = 'Feed Updated';
+            }, 1000);
+          });
+        }
+      });
+    }
+
+    // Navigate to the Add Device page
+    document.getElementById('addDeviceButton').addEventListener('click', () => {
+      window.location.href = 'add_device.html';
+    });
+
+    // Load devices when the page loads
+    window.onload = loadDevices;
+  </script>
+</body>
+</html>
