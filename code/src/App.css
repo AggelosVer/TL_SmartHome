@@ -1,0 +1,108 @@
+html, body {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  min-width: 1200px;
+  min-height: 800px;
+  overflow: hidden;
+}
+
+.title-bar {
+  background: #1aabff;
+  color: #000;
+  text-align: center;
+  font-size: 3rem;
+  margin: 0;
+  padding: 24px 0 12px 0;
+  letter-spacing: 2px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.app-content-row {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  min-width: 1200px;
+  min-height: 800px;
+  overflow: hidden;
+}
+
+.sidebar {
+  background: #06549b;
+  color: #fff;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+  height: 100%;
+  min-height: 800px;
+  overflow: hidden;
+}
+
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar nav ul li {
+  padding: 16px 20px;
+  cursor: pointer;
+}
+
+.sidebar nav ul li.active, .sidebar nav ul li:hover {
+  background: #1a5cff;
+}
+
+.sidebar nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.guest-toggle {
+  background: #1a5cff;
+  color: #fff;
+  text-align: center;
+  padding: 12px 0;
+  cursor: pointer;
+  font-size: 1rem;
+  margin: 16px 8px;
+  border-radius: 4px;
+}
+
+.main-content {
+  flex: 1;
+  background: #fff;
+  padding: 0 0 0 0;
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  min-height: 800px;
+  min-width: 1020px;
+  overflow: hidden;
+}
+
+.app-title {
+  background: #1aabff;
+  color: #000;
+  text-align: center;
+  font-size: 3rem;
+  margin: 0;
+  padding: 24px 0 12px 0;
+  letter-spacing: 2px;
+}
+
+.guest-active {
+  background: #ff9800 !important;
+  color: #fff !important;
+} 
