@@ -1,0 +1,54 @@
+.add-device-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  min-height: 800px;
+  min-width: 1020px;
+  background: #f7faff;
+}
+
+.add-device-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  padding: 36px 28px 28px 28px;
+  min-width: 340px;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.add-device-card h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+.add-device-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+.add-device-form input,
+.add-device-form select {
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #b0c4de;
+  font-size: 1rem;
+  outline: none;
+}
+.add-device-form button {
+  background: #1a5cff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.add-device-form button:hover {
+  background: #0d3fa6;
+} 
