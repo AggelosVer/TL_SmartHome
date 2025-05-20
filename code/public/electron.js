@@ -14,7 +14,7 @@ function createWindow() {
 
   const isDev = process.env.NODE_ENV === 'development' || process.env.ELECTRON_START_URL;
   const devURL = process.env.ELECTRON_START_URL || 'http://localhost:3000';
-  const prodURL = `file://${path.join(__dirname, '../build/index.html')}`;
+  const prodURL = `http://localhost:3000`;
 
   if (isDev) {
     console.log('Electron loading DEV URL:', devURL);
