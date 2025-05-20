@@ -8,6 +8,32 @@ import Help from './pages/Help';
 import AddDevicePage from './pages/AddDevicePage';
 import './App.css';
 
+// Storage utility to handle both Electron and web storage
+const storage = {
+  isElectron: window && window.process && window.process.type,
+  
+  get: (key) => {
+    if (storage.isElectron) {
+      // Use Electron's storage
+      return window.electron.getStorage(key);
+    } else {
+      // Use browser's localStorage
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    }
+  },
+  
+  set: (key, value) => {
+    if (storage.isElectron) {
+      // Use Electron's storage
+      window.electron.setStorage(key, value);
+    } else {
+      // Use browser's localStorage
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+  }
+};
+
 const Sidebar = ({ guestMode, toggleGuestMode }) => {
   const location = useLocation();
   return (
@@ -50,14 +76,18 @@ function getDefaultStatus(type) {
 
 function App() {
   const [guestMode, setGuestMode] = useState(false);
-  const [devices, setDevices] = useState([
-    { id: 1, name: 'Light 1', type: 'Light', status: 'on', room: 'Living Room' },
-    { id: 2, name: 'Light 2', type: 'Light', status: 'on', room: 'Bedroom' },
-    { id: 3, name: 'Camera 1', type: 'Camera', status: 'idle', room: 'Entrance' },
-    { id: 4, name: 'Thermostat', type: 'Thermostat', status: 23, room: 'Hallway' },
-    { id: 5, name: 'Main Door', type: 'Door', status: 'locked', room: 'Entrance' },
-    { id: 6, name: 'Alarm', type: 'Alarm', status: 'disabled', room: 'House' },
-  ]);
+  const [devices, setDevices] = useState(() => {
+    // Load devices from localStorage on initial render
+    const savedDevices = localStorage.getItem('smartHomeDevices');
+    return savedDevices ? JSON.parse(savedDevices) : [
+      { id: 1, name: 'Light 1', type: 'Light', status: 'on', room: 'Living Room' },
+      { id: 2, name: 'Light 2', type: 'Light', status: 'on', room: 'Bedroom' },
+      { id: 3, name: 'Camera 1', type: 'Camera', status: 'idle', room: 'Entrance' },
+      { id: 4, name: 'Thermostat', type: 'Thermostat', status: 23, room: 'Hallway' },
+      { id: 5, name: 'Main Door', type: 'Door', status: 'locked', room: 'Entrance' },
+      { id: 6, name: 'Alarm', type: 'Alarm', status: 'disabled', room: 'House' },
+    ];
+  });
   const [alerts, setAlerts] = useState([
     '08:30, March 22 – Motion detected in the living room.',
     '22:15, March 21 – High energy usage in the kitchen.',
@@ -76,76 +106,113 @@ function App() {
 
   // Add device with only name, type, room
   const addDevice = ({ name, type, room }) => {
-    setDevices((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        name,
-        type,
-        room,
-        status: getDefaultStatus(type),
-      },
-    ]);
+    setDevices((prev) => {
+      const newDevices = [
+        ...prev,
+        {
+          id: Date.now(),
+          name,
+          type,
+          room,
+          status: getDefaultStatus(type),
+        },
+      ];
+      // Save to localStorage whenever devices change
+      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+      return newDevices;
+    });
   };
 
   // Device control handlers
   const updateDeviceStatus = (id, newStatus) => {
-    setDevices((prev) => prev.map(d => d.id === id ? { ...d, status: newStatus } : d));
+    setDevices((prev) => {
+      const newDevices = prev.map(d => d.id === id ? { ...d, status: newStatus } : d);
+      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+      return newDevices;
+    });
   };
 
   // For camera: toggle recording/idle
   const toggleCameraRecording = (id) => {
-    setDevices((prev) => prev.map(d =>
-      d.id === id && d.type === 'Camera'
-        ? { ...d, status: d.status === 'recording' ? 'idle' : 'recording' }
-        : d
-    ));
+    setDevices((prev) => {
+      const newDevices = prev.map(d =>
+        d.id === id && d.type === 'Camera'
+          ? { ...d, status: d.status === 'recording' ? 'idle' : 'recording' }
+          : d
+      );
+      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+      return newDevices;
+    });
   };
 
   // For light: toggle on/off
   const toggleLight = (id) => {
-    setDevices((prev) => prev.map(d =>
-      d.id === id && d.type === 'Light'
-        ? { ...d, status: d.status === 'on' ? 'off' : 'on' }
-        : d
-    ));
+    setDevices((prev) => {
+      const newDevices = prev.map(d =>
+        d.id === id && d.type === 'Light'
+          ? { ...d, status: d.status === 'on' ? 'off' : 'on' }
+          : d
+      );
+      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+      return newDevices;
+    });
   };
 
   // For door: toggle locked/unlocked
   const toggleDoor = (id) => {
-    setDevices((prev) => prev.map(d =>
-      d.id === id && d.type === 'Door'
-        ? { ...d, status: d.status === 'locked' ? 'unlocked' : 'locked' }
-        : d
-    ));
+    setDevices((prev) => {
+      const newDevices = prev.map(d =>
+        d.id === id && d.type === 'Door'
+          ? { ...d, status: d.status === 'locked' ? 'unlocked' : 'locked' }
+          : d
+      );
+      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+      return newDevices;
+    });
   };
 
   // For alarm: toggle enabled/disabled
   const toggleAlarm = (id) => {
-    setDevices((prev) => prev.map(d =>
-      d.id === id && d.type === 'Alarm'
-        ? { ...d, status: d.status === 'enabled' ? 'disabled' : 'enabled' }
-        : d
-    ));
+    setDevices((prev) => {
+      const newDevices = prev.map(d =>
+        d.id === id && d.type === 'Alarm'
+          ? { ...d, status: d.status === 'enabled' ? 'disabled' : 'enabled' }
+          : d
+      );
+      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+      return newDevices;
+    });
   };
 
   // For thermostat: set temperature
   const setThermostat = (id, temp) => {
-    setDevices((prev) => prev.map(d =>
-      d.id === id && d.type === 'Thermostat'
-        ? { ...d, status: temp }
-        : d
-    ));
+    setDevices((prev) => {
+      const newDevices = prev.map(d =>
+        d.id === id && d.type === 'Thermostat'
+          ? { ...d, status: temp }
+          : d
+      );
+      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+      return newDevices;
+    });
   };
 
   // Edit device details
   const editDevice = (id, newDetails) => {
-    setDevices((prev) => prev.map(d => d.id === id ? { ...d, ...newDetails } : d));
+    setDevices((prev) => {
+      const newDevices = prev.map(d => d.id === id ? { ...d, ...newDetails } : d);
+      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+      return newDevices;
+    });
   };
 
   // Remove device
   const removeDevice = (id) => {
-    setDevices((prev) => prev.filter(d => d.id !== id));
+    setDevices((prev) => {
+      const newDevices = prev.filter(d => d.id !== id);
+      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+      return newDevices;
+    });
   };
 
   return (
