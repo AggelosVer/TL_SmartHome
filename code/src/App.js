@@ -148,16 +148,25 @@ function App({ navigate }) {
 
 const requestAdminLogin = () => {
   if (guestMode) {
-    setShowLoginPrompt(true);
+    // Force close + reset password field before reopening
+    setShowLoginPrompt(false);
+    setAdminPassword('');
+    setLoginError('');
+
+    setTimeout(() => {
+      setShowLoginPrompt(true); // Reopens popup after DOM updates
+    }, 50); // Short delay ensures remount
   } else {
     const confirmSwitch = window.confirm('Are you sure you want to switch to Guest Mode?');
     if (confirmSwitch) {
       setIsAdmin(false);
       setGuestMode(true);
-      navigate('/'); 
+      navigate('/');
     }
   }
 };
+
+
 
 
     const handleAdminLogin = () => {
@@ -295,21 +304,21 @@ const setThermostat = (id, temp) => {
           />
 
           {showLoginPrompt && (
-            <div className="admin-login-popup">
-              <div className="login-box">
-                <h3>Enter Admin Password</h3>
-                <input
-                  type="password"
-                  placeholder="Enter admin password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                />
-                <button onClick={handleAdminLogin}>Login</button>
-                {loginError && <p className="error">{loginError}</p>}
-              </div>
+          <div className="admin-login-popup">
+            <div className="login-box">
+              <h3>Enter Admin Password</h3>
+              <input
+                type="password"
+                placeholder="Enter admin password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                autoFocus
+              />
+              <button onClick={handleAdminLogin}>Login</button>
+              {loginError && <p className="error">{loginError}</p>}
             </div>
-          )}
-
+          </div>
+        )}
 
           <div className="main-content">
             <Routes>
