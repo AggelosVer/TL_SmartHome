@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import {  Routes, Route, Link, useLocation } from 'react-router-dom';
 import Homepage from './pages/Homepage';
 import ManageDevices from './pages/ManageDevices';
 import AlertHistory from './pages/AlertHistory';
@@ -8,6 +8,14 @@ import Help from './pages/Help';
 import AddDevicePage from './pages/AddDevicePage';
 import Device from './domain/Device';
 import './App.css';
+
+import { useNavigate } from 'react-router-dom';
+
+function AppWrapper() {
+  const navigate = useNavigate();
+  return <App navigate={navigate} />;
+}
+
 
 const storage = {
   isElectron: window && window.process && window.process.type,
@@ -85,7 +93,7 @@ function getDefaultStatus(type) {
   }
 }
 
-function App() {
+function App({ navigate }) {
   const [guestMode, setGuestMode] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -138,19 +146,19 @@ function App() {
     '02:30, March 17 – Unusual activity detected near the backyard.'
   ]);
 
-  const requestAdminLogin = () => {
-    if (guestMode) {
-      // Show password input
-      setShowLoginPrompt(true);
-    } else {
-      // Already in admin mode , ask for confirmation to switch to guest
-      const confirmSwitch = window.confirm('Are you sure you want to switch to Guest Mode?');
-      if (confirmSwitch) {
-        setIsAdmin(false);
-        setGuestMode(true);
-      }
+const requestAdminLogin = () => {
+  if (guestMode) {
+    setShowLoginPrompt(true);
+  } else {
+    const confirmSwitch = window.confirm('Are you sure you want to switch to Guest Mode?');
+    if (confirmSwitch) {
+      setIsAdmin(false);
+      setGuestMode(true);
+      navigate('/'); 
     }
-  };
+  }
+};
+
 
     const handleAdminLogin = () => {
     if (adminPassword === '123') {
@@ -278,7 +286,6 @@ const setThermostat = (id, temp) => {
   };
 
   return (
-    <Router>
       <div className="app-container">
         <div className="title-bar">Smart Home</div>
         <div className="app-content-row">
@@ -338,8 +345,8 @@ const setThermostat = (id, temp) => {
           </div>
         </div>
       </div>
-    </Router>
   );
 }
 
-export default App;
+// export default App;
+export default AppWrapper;
