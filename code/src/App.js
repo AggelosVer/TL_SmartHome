@@ -364,7 +364,6 @@ const setThermostat = (id, temp) => {
   });
   const [automationError, setAutomationError] = useState('');
 
-  // Add automation with duplicate check (for multi-action automations)
   const addAutomation = (automation) => {
     // Check for duplicate actions within the same automation
     for (let i = 0; i < automation.actions.length; i++) {
@@ -382,7 +381,7 @@ const setThermostat = (id, temp) => {
         }
       }
     }
-
+  
     // Check for duplicate actions across all automations
     for (const existingAutomation of automations) {
       for (const existingAction of existingAutomation.actions) {
@@ -399,18 +398,28 @@ const setThermostat = (id, temp) => {
         }
       }
     }
-
+  
     const updated = [...automations, automation];
     setAutomations(updated);
     storage.set('smartHomeAutomations', updated);
     setAutomationError('');
+  
+    // Add an alert for the new automation
+    addAlert(`New automation added: ${automation.name}`);
+  
     return true;
   };
 
   const removeAutomation = (idx) => {
+    const automationToRemove = automations[idx];
     const updated = automations.filter((_, i) => i !== idx);
     setAutomations(updated);
     storage.set('smartHomeAutomations', updated);
+  
+    // Add an alert for the removed automation
+    if (automationToRemove) {
+      addAlert(`Automation removed: ${automationToRemove.name}`);
+    }
   };
 
   // --- AUTOMATION EXECUTION LOGIC ---
