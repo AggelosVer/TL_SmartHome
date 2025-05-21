@@ -47,9 +47,6 @@ const Sidebar = ({ guestMode, requestAdminLogin }) => {
           <li className={location.pathname === '/' ? 'active' : ''}>
             <Link to="/">Homepage</Link>
           </li>
-                      <li className={location.pathname === '/help' ? 'active' : ''}>
-              <Link to="/help">Help</Link>
-         </li>
 
           {/* Admin-only links */}
           {!guestMode && (
@@ -65,6 +62,9 @@ const Sidebar = ({ guestMode, requestAdminLogin }) => {
               </li>
             </>
           )}
+          <li className={location.pathname === '/help' ? 'active' : ''}>
+            <Link to="/help">Help</Link>
+         </li>
         </ul>
       </nav>
 
