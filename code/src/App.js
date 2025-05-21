@@ -6,88 +6,124 @@ import AlertHistory from './pages/AlertHistory';
 import PowerUsage from './pages/PowerUsage';
 import Help from './pages/Help';
 import AddDevicePage from './pages/AddDevicePage';
+import Device from './domain/Device';
 import './App.css';
 
-// Storage utility to handle both Electron and web storage
 const storage = {
   isElectron: window && window.process && window.process.type,
-  
   get: (key) => {
     if (storage.isElectron) {
-      // Use Electron's storage
       return window.electron.getStorage(key);
     } else {
-      // Use browser's localStorage
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : null;
     }
   },
-  
   set: (key, value) => {
     if (storage.isElectron) {
-      // Use Electron's storage
       window.electron.setStorage(key, value);
     } else {
-      // Use browser's localStorage
       localStorage.setItem(key, JSON.stringify(value));
     }
   }
 };
 
-const Sidebar = ({ guestMode, toggleGuestMode }) => {
+const Sidebar = ({ guestMode, requestAdminLogin }) => {
   const location = useLocation();
+
   return (
     <div className="sidebar">
       <nav>
         <ul>
-          <li className={location.pathname === '/' ? 'active' : ''}><Link to="/">Homepage</Link></li>
-          <li className={location.pathname === '/manage' ? 'active' : ''}><Link to="/manage">Manage Devices</Link></li>
-          <li className={location.pathname === '/alerts' ? 'active' : ''}><Link to="/alerts">Alert History</Link></li>
-          <li className={location.pathname === '/power' ? 'active' : ''}><Link to="/power">Power Usage</Link></li>
-          <li className={location.pathname === '/help' ? 'active' : ''}><Link to="/help">Help</Link></li>
+          {/* Always visible */}
+          <li className={location.pathname === '/' ? 'active' : ''}>
+            <Link to="/">Homepage</Link>
+          </li>
+
+          {/* Admin-only links */}
+          {!guestMode && (
+            <>
+              <li className={location.pathname === '/manage' ? 'active' : ''}>
+                <Link to="/manage">Manage Devices</Link>
+              </li>
+              <li className={location.pathname === '/alerts' ? 'active' : ''}>
+                <Link to="/alerts">Alert History</Link>
+              </li>
+              <li className={location.pathname === '/power' ? 'active' : ''}>
+                <Link to="/power">Power Usage</Link>
+              </li>
+              <li className={location.pathname === '/help' ? 'active' : ''}>
+                <Link to="/help">Help</Link>
+              </li>
+            </>
+          )}
         </ul>
       </nav>
-      <div className={guestMode ? 'guest-toggle guest-active' : 'guest-toggle'} onClick={toggleGuestMode}>
-        {guestMode ? 'Guest Mode Active' : 'Switch to Guest'}
+
+      {/* Toggle mode button */}
+      <div
+        className={guestMode ? 'guest-toggle guest-active' : 'guest-toggle'}
+        onClick={requestAdminLogin}
+      >
+        {guestMode ? 'Switch to Admin' : 'Admin Mode'}
       </div>
     </div>
   );
 };
 
-// Device type definitions
-const DEVICE_TYPES = [
-  'Light',
-  'Door',
-  'Camera',
-  'Thermostat',
-  'Alarm',
-];
+
+const DEVICE_TYPES = ['Light', 'Door', 'Camera', 'Thermostat', 'Alarm'];
 
 function getDefaultStatus(type) {
   switch (type) {
     case 'Light': return 'off';
     case 'Door': return 'locked';
     case 'Camera': return 'idle';
-    case 'Thermostat': return 22; // default temperature
+    case 'Thermostat': return 22;
     case 'Alarm': return 'disabled';
     default: return '';
   }
 }
 
 function App() {
-  const [guestMode, setGuestMode] = useState(false);
+  const [guestMode, setGuestMode] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+
   const [devices, setDevices] = useState(() => {
-    // Load devices from localStorage on initial render
     const savedDevices = localStorage.getItem('smartHomeDevices');
-    return savedDevices ? JSON.parse(savedDevices) : [
-      { id: 1, name: 'Light 1', type: 'Light', status: 'on', room: 'Living Room' },
-      { id: 2, name: 'Light 2', type: 'Light', status: 'on', room: 'Bedroom' },
-      { id: 3, name: 'Camera 1', type: 'Camera', status: 'idle', room: 'Entrance' },
-      { id: 4, name: 'Thermostat', type: 'Thermostat', status: 23, room: 'Hallway' },
-      { id: 5, name: 'Main Door', type: 'Door', status: 'locked', room: 'Entrance' },
-      { id: 6, name: 'Alarm', type: 'Alarm', status: 'disabled', room: 'House' },
+
+    if (savedDevices) {
+      const parsed = JSON.parse(savedDevices);
+      return parsed.map(d => new Device({
+      id: d.id,
+      name: d.name,
+      room: d.room,
+      type: d.type,
+      owner: d.owner || 'admin',
+      functionState: d.functionState ?? getDefaultStatus(d.type),
+      energyStatus: d.energyStatus || 'normal',
+      visibility: d.visibility || 'public'
+    }));
+
+    }
+
+    return [
+      new Device({ id: 1, name: 'Light 1', room: 'Living Room', type: 'Light', owner: 'admin', functionState: 'on', energyStatus: 'normal', visibility: 'public' }),
+      new Device({ id: 2, name: 'Light 2', room: 'Bedroom', type: 'Light', owner: 'admin', functionState: 'on', energyStatus: 'normal', visibility: 'public' }),
+      new Device({ id: 3, name: 'Camera 1', room: 'Entrance', type: 'Camera', owner: 'admin', functionState: 'idle', energyStatus: 'normal', visibility: 'public' }),
+      new Device({ id: 4, name: 'Thermostat', room: 'Hallway', type: 'Thermostat', owner: 'admin', functionState: 23, energyStatus: 'normal', visibility: 'public' }),
+      new Device({ id: 5, name: 'Main Door', room: 'Entrance', type: 'Door', owner: 'admin', functionState: 'locked', energyStatus: 'normal', visibility: 'private' }),
+      new Device({ id: 6, name: 'Alarm', room: 'House', type: 'Alarm', owner: 'admin', functionState: 'disabled', energyStatus: 'normal', visibility: 'private' }),
     ];
   });
+
+
+  // const isDisabled = guestMode && (device.visibility || 'public') === 'private';
+
+
   const [alerts, setAlerts] = useState([
     '08:30, March 22 – Motion detected in the living room.',
     '22:15, March 21 – High energy usage in the kitchen.',
@@ -102,113 +138,139 @@ function App() {
     '02:30, March 17 – Unusual activity detected near the backyard.'
   ]);
 
-  const toggleGuestMode = () => setGuestMode((g) => !g);
+  const requestAdminLogin = () => {
+    if (guestMode) {
+      // Show password input
+      setShowLoginPrompt(true);
+    } else {
+      // Already in admin mode , ask for confirmation to switch to guest
+      const confirmSwitch = window.confirm('Are you sure you want to switch to Guest Mode?');
+      if (confirmSwitch) {
+        setIsAdmin(false);
+        setGuestMode(true);
+      }
+    }
+  };
 
-  // Add device with only name, type, room
-  const addDevice = ({ name, type, room }) => {
-    setDevices((prev) => {
-      const newDevices = [
-        ...prev,
-        {
-          id: Date.now(),
-          name,
-          type,
-          room,
-          status: getDefaultStatus(type),
-        },
-      ];
-      // Save to localStorage whenever devices change
+    const handleAdminLogin = () => {
+    if (adminPassword === '123') {
+      setIsAdmin(true);
+      setGuestMode(false);
+      setShowLoginPrompt(false);
+      setLoginError('');
+      setAdminPassword('');
+    } else {
+      setLoginError('Incorrect password');
+    }
+  };
+
+
+  const toggleGuestMode = () => setGuestMode(g => !g);
+
+
+  const addDevice = ({ name, type, room, visibility }) => {
+    setDevices(prev => {
+      const newDevice = new Device({
+        id: Date.now(),
+        name,
+        type,
+        room,
+        owner: 'admin',
+        functionState: getDefaultStatus(type),
+        energyStatus: 'normal',
+        visibility: visibility || 'public'
+      });
+
+      const newDevices = [...prev, newDevice];
       localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
       return newDevices;
     });
   };
 
-  // Device control handlers
+
+
   const updateDeviceStatus = (id, newStatus) => {
-    setDevices((prev) => {
+    setDevices(prev => {
       const newDevices = prev.map(d => d.id === id ? { ...d, status: newStatus } : d);
       localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
       return newDevices;
     });
   };
 
-  // For camera: toggle recording/idle
-  const toggleCameraRecording = (id) => {
-    setDevices((prev) => {
-      const newDevices = prev.map(d =>
-        d.id === id && d.type === 'Camera'
-          ? { ...d, status: d.status === 'recording' ? 'idle' : 'recording' }
-          : d
-      );
-      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
-      return newDevices;
-    });
-  };
+const toggleCameraRecording = (id) => {
+  setDevices((prev) => {
+    const newDevices = prev.map(d =>
+      d.id === id && d.type === 'Camera'
+        ? { ...d, functionState: d.functionState === 'recording' ? 'idle' : 'recording' }
+        : d
+    );
+    localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+    return newDevices;
+  });
+};
 
-  // For light: toggle on/off
-  const toggleLight = (id) => {
-    setDevices((prev) => {
-      const newDevices = prev.map(d =>
-        d.id === id && d.type === 'Light'
-          ? { ...d, status: d.status === 'on' ? 'off' : 'on' }
-          : d
-      );
-      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
-      return newDevices;
-    });
-  };
+const toggleLight = (id) => {
+  setDevices((prev) => {
+    const newDevices = prev.map(d =>
+      d.id === id && d.type === 'Light'
+        ? { ...d, functionState: d.functionState === 'on' ? 'off' : 'on' }
+        : d
+    );
+    localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+    return newDevices;
+  });
+};
 
-  // For door: toggle locked/unlocked
-  const toggleDoor = (id) => {
-    setDevices((prev) => {
-      const newDevices = prev.map(d =>
-        d.id === id && d.type === 'Door'
-          ? { ...d, status: d.status === 'locked' ? 'unlocked' : 'locked' }
-          : d
-      );
-      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
-      return newDevices;
-    });
-  };
 
-  // For alarm: toggle enabled/disabled
-  const toggleAlarm = (id) => {
-    setDevices((prev) => {
-      const newDevices = prev.map(d =>
-        d.id === id && d.type === 'Alarm'
-          ? { ...d, status: d.status === 'enabled' ? 'disabled' : 'enabled' }
-          : d
-      );
-      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
-      return newDevices;
-    });
-  };
 
-  // For thermostat: set temperature
-  const setThermostat = (id, temp) => {
-    setDevices((prev) => {
-      const newDevices = prev.map(d =>
-        d.id === id && d.type === 'Thermostat'
-          ? { ...d, status: temp }
-          : d
-      );
-      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
-      return newDevices;
-    });
-  };
+const toggleDoor = (id) => {
+  setDevices((prev) => {
+    const newDevices = prev.map(d =>
+      d.id === id && d.type === 'Door'
+        ? { ...d, functionState: d.functionState === 'locked' ? 'unlocked' : 'locked' }
+        : d
+    );
+    localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+    return newDevices;
+  });
+};
 
-  // Edit device details
+const toggleAlarm = (id) => {
+  setDevices((prev) => {
+    const newDevices = prev.map(d =>
+      d.id === id && d.type === 'Alarm'
+        ? { ...d, functionState: d.functionState === 'enabled' ? 'disabled' : 'enabled' }
+        : d
+    );
+    localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+    return newDevices;
+  });
+};
+
+
+const setThermostat = (id, temp) => {
+  setDevices((prev) => {
+    const newDevices = prev.map(d =>
+      d.id === id && d.type === 'Thermostat'
+        ? { ...d, functionState: temp }
+        : d
+    );
+    localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+    return newDevices;
+  });
+};
+
+
   const editDevice = (id, newDetails) => {
-    setDevices((prev) => {
+    setDevices(prev => {
       const newDevices = prev.map(d => d.id === id ? { ...d, ...newDetails } : d);
       localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
       return newDevices;
     });
   };
 
-  // Remove device
   const removeDevice = (id) => {
-    setDevices((prev) => {
+    setDevices(prev => {
       const newDevices = prev.filter(d => d.id !== id);
       localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
       return newDevices;
@@ -220,7 +282,28 @@ function App() {
       <div className="app-container">
         <div className="title-bar">Smart Home</div>
         <div className="app-content-row">
-          <Sidebar guestMode={guestMode} toggleGuestMode={toggleGuestMode} />
+          <Sidebar
+            guestMode={guestMode}
+            requestAdminLogin={requestAdminLogin}
+          />
+
+          {showLoginPrompt && (
+            <div className="admin-login-popup">
+              <div className="login-box">
+                <h3>Enter Admin Password</h3>
+                <input
+                  type="password"
+                  placeholder="Enter admin password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                />
+                <button onClick={handleAdminLogin}>Login</button>
+                {loginError && <p className="error">{loginError}</p>}
+              </div>
+            </div>
+          )}
+
+
           <div className="main-content">
             <Routes>
               <Route path="/" element={
@@ -259,4 +342,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

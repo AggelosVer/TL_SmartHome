@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AddDevicePage.css';
 
-const initialForm = { name: '', type: '', room: '' };
+const initialForm = { name: '', type: '', room: '', visibility: 'public' };
+
 
 function AddDevicePage({ addDevice, deviceTypes }) {
   const [form, setForm] = useState(initialForm);
@@ -16,7 +17,7 @@ function AddDevicePage({ addDevice, deviceTypes }) {
     e.preventDefault();
     if (!form.name || !form.type || !form.room) return;
     addDevice(form);
-    navigate('/manage');
+    navigate('/');
   };
 
   return (
@@ -32,11 +33,34 @@ function AddDevicePage({ addDevice, deviceTypes }) {
             ))}
           </select>
           <input name="room" placeholder="Room" value={form.room} onChange={handleChange} />
-          <button type="submit">Add Device</button>
-        </form>
-      </div>
+          <div className="visibility-options">
+          <label>
+            <input
+              type="radio"
+              name="visibility"
+              value="public"
+              checked={form.visibility === 'public'}
+              onChange={handleChange}
+            />
+            Public
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="visibility"
+              value="private"
+              checked={form.visibility === 'private'}
+              onChange={handleChange}
+            />
+            Private
+          </label>
+        </div>
+
+        <button type="submit">Add Device</button>
+      </form>
     </div>
-  );
+  </div>
+);
 }
 
-export default AddDevicePage; 
+export default AddDevicePage;

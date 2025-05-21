@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './Homepage.css';
 
 function Homepage({
+  guestMode,
   devices,
   toggleLight,
   toggleDoor,
@@ -15,20 +16,40 @@ function Homepage({
     <div className="homepage-container">
       <div className="homepage-device-scroll-container">
         <div className="device-grid">
-          {devices.map((device) => (
-            <div className="device-tile" key={device.id}>
-              <div className="device-title">{device.name}</div>
+        {devices.map((device) => {
+          const isDisabled = guestMode && device.visibility === 'private';
+
+          return (
+            <div className={`device-tile ${isDisabled ? 'disabled' : ''}`} key={device.id}>
+            <div className="device-title">
+            {device.name}
+            {guestMode && device.visibility === 'private' && (
+              <span className="lock-icon" title="Private - Admin Only">  </span>
+            )}
+            </div>
               <div className="device-type">{device.type}</div>
               <div className="device-room">{device.room}</div>
               <div className="device-status">{renderStatus(device)}</div>
-              <div className="device-controls">{renderControls(device, { toggleLight, toggleDoor, toggleCameraRecording, toggleAlarm, setThermostat })}</div>
+              <div className="device-controls">
+                {renderControls(device, {
+                  toggleLight,
+                  toggleDoor,
+                  toggleCameraRecording,
+                  toggleAlarm,
+                  setThermostat
+                }, isDisabled)}
+              </div>
             </div>
-          ))}
+          );
+        })}
         </div>
       </div>
+    {!guestMode && (
       <button className="add-device-fab" onClick={() => navigate('/add-device')}>
         + Add New Device
       </button>
+    )}
+
     </div>
   );
 }
@@ -36,41 +57,43 @@ function Homepage({
 function renderStatus(device) {
   switch (device.type) {
     case 'Light':
-      return device.status === 'on' ? 'ON' : 'OFF';
+      return device.functionState === 'on' ? 'ON' : 'OFF';
     case 'Door':
-      return device.status === 'locked' ? 'Locked' : 'Unlocked';
+      return device.functionState === 'locked' ? 'Locked' : 'Unlocked';
     case 'Camera':
-      return device.status === 'recording' ? 'Recording' : 'Idle';
+      return device.functionState === 'recording' ? 'Recording' : 'Idle';
     case 'Thermostat':
-      return `${device.status}°C`;
+      return `${device.functionState}°C`;
     case 'Alarm':
-      return device.status === 'enabled' ? 'Enabled' : 'Disabled';
+      return device.functionState === 'enabled' ? 'Enabled' : 'Disabled';
     default:
-      return device.status;
+      return device.functionState;
   }
 }
 
-function renderControls(device, handlers) {
+function renderControls(device, handlers, isDisabled = false) {
   switch (device.type) {
     case 'Light':
       return (
-        <button onClick={() => handlers.toggleLight(device.id)}>
-          {device.status === 'on' ? 'Turn Off' : 'Turn On'}
+        <button onClick={() => handlers.toggleLight(device.id)} disabled={isDisabled}>
+          {device.functionState === 'on' ? 'Turn Off' : 'Turn On'}
         </button>
       );
     case 'Door':
       return (
-        <button onClick={() => handlers.toggleDoor(device.id)}>
-          {device.status === 'locked' ? 'Unlock' : 'Lock'}
+        <button onClick={() => handlers.toggleDoor(device.id)} disabled={isDisabled}>
+          {device.functionState === 'locked' ? 'Unlock' : 'Lock'}
         </button>
       );
     case 'Camera':
       return (
         <>
-          <button onClick={() => handlers.toggleCameraRecording(device.id)}>
-            {device.status === 'recording' ? 'Stop Recording' : 'Start Recording'}
+          <button onClick={() => handlers.toggleCameraRecording(device.id)} disabled={isDisabled}>
+            {device.functionState === 'recording' ? 'Stop Recording' : 'Start Recording'}
           </button>
-          <button style={{ marginLeft: 8 }}>View Feed</button>
+          <button style={{ marginLeft: 8 }} disabled={isDisabled}>
+            View Feed
+          </button>
         </>
       );
     case 'Thermostat':
@@ -79,14 +102,15 @@ function renderControls(device, handlers) {
           type="range"
           min="10"
           max="30"
-          value={device.status}
+          value={device.functionState}
           onChange={e => handlers.setThermostat(device.id, Number(e.target.value))}
+          disabled={isDisabled}
         />
       );
     case 'Alarm':
       return (
-        <button onClick={() => handlers.toggleAlarm(device.id)}>
-          {device.status === 'enabled' ? 'Disable' : 'Enable'}
+        <button onClick={() => handlers.toggleAlarm(device.id)} disabled={isDisabled}>
+          {device.functionState === 'enabled' ? 'Disable' : 'Enable'}
         </button>
       );
     default:
@@ -94,4 +118,4 @@ function renderControls(device, handlers) {
   }
 }
 
-export default Homepage; 
+export default Homepage;

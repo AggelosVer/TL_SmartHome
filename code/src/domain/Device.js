@@ -1,5 +1,5 @@
 class Device {
-  constructor({ id, name, room, type, owner, functionState, energyStatus }) {
+  constructor({ id, name, room, type, owner, functionState, energyStatus, visibility }) {
     this.id = id;
     this.name = name;
     this.room = room;
@@ -7,6 +7,7 @@ class Device {
     this.owner = owner;
     this.functionState = functionState;
     this.energyStatus = energyStatus;
+    this.visibility = visibility || 'public';
   }
 
   toggle() {
@@ -19,7 +20,6 @@ class Device {
     } else if (this.type === 'Camera') {
       this.functionState = this.functionState === 'recording' ? 'idle' : 'recording';
     }
-    // Thermostat and others can have their own logic
   }
 
   toJSON() {
@@ -27,4 +27,4 @@ class Device {
   }
 }
 
-export default Device; 
+export default Device;

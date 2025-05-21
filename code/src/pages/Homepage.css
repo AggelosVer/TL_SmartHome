@@ -103,3 +103,14 @@
   background: #0d3fa6;
   box-shadow: 0 8px 24px rgba(0,0,0,0.18);
 } 
+
+.device-tile.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.device-controls button[disabled],
+.device-controls input[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
