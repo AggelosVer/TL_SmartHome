@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {  Routes, Route, Link, useLocation } from 'react-router-dom';
 import Homepage from './pages/Homepage';
 import ManageDevices from './pages/ManageDevices';
@@ -18,7 +18,7 @@ function AppWrapper() {
 
 
 const storage = {
-  isElectron: window && window.process && window.process.type,
+  isElectron: typeof window !== 'undefined' && window.electron && typeof window.electron.getStorage === 'function',
   get: (key) => {
     if (storage.isElectron) {
       return window.electron.getStorage(key);
@@ -308,6 +308,92 @@ const setThermostat = (id, temp) => {
     });
   };
 
+  const [automations, setAutomations] = useState(() => {
+    const saved = storage.get('smartHomeAutomations');
+    return saved ? saved : [];
+  });
+  const [automationError, setAutomationError] = useState('');
+
+  // Add automation with duplicate check (for multi-action automations)
+  const addAutomation = (automation) => {
+    // Check for duplicate actions within the same automation
+    for (let i = 0; i < automation.actions.length; i++) {
+      const a1 = automation.actions[i];
+      for (let j = i + 1; j < automation.actions.length; j++) {
+        const a2 = automation.actions[j];
+        if (
+          a1.deviceId === a2.deviceId &&
+          a1.triggerType === a2.triggerType &&
+          a1.triggerValue === a2.triggerValue &&
+          a1.action === a2.action
+        ) {
+          setAutomationError('Duplicate action (same device, trigger, and action) within this automation.');
+          return false;
+        }
+      }
+    }
+
+    // Check for duplicate actions across all automations
+    for (const existingAutomation of automations) {
+      for (const existingAction of existingAutomation.actions) {
+        for (const newAction of automation.actions) {
+          if (
+            existingAction.deviceId === newAction.deviceId &&
+            existingAction.triggerType === newAction.triggerType &&
+            existingAction.triggerValue === newAction.triggerValue &&
+            existingAction.action === newAction.action
+          ) {
+            setAutomationError('An automation with the same device, trigger, and action already exists.');
+            return false;
+          }
+        }
+      }
+    }
+
+    const updated = [...automations, automation];
+    setAutomations(updated);
+    storage.set('smartHomeAutomations', updated);
+    setAutomationError('');
+    return true;
+  };
+
+  const removeAutomation = (idx) => {
+    const updated = automations.filter((_, i) => i !== idx);
+    setAutomations(updated);
+    storage.set('smartHomeAutomations', updated);
+  };
+
+  // --- AUTOMATION EXECUTION LOGIC ---
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const currentTime = now.toTimeString().slice(0, 5); // "HH:MM"
+
+      automations.forEach(automation => {
+        automation.actions.forEach(action => {
+          const device = devices.find(d => d.id === action.deviceId);
+          if (!device) return;
+
+          // Thermostat: set temperature at time
+          if (
+            device.type === 'Thermostat' &&
+            action.action === 'set temperature' &&
+            action.triggerType === 'time' &&
+            action.triggerValue === currentTime &&
+            typeof action.targetTemp === 'number'
+          ) {
+            updateDeviceStatus(device.id, action.targetTemp);
+          }
+
+         
+        });
+      });
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [automations, devices]);
+  // --- END AUTOMATION EXECUTION LOGIC ---
+
   return (
       <div className="app-container">
         <div className="title-bar">Smart Home</div>
@@ -356,6 +442,11 @@ const setThermostat = (id, temp) => {
                   editDevice={editDevice}
                   removeDevice={removeDevice}
                   deviceTypes={DEVICE_TYPES}
+                  automations={automations}
+                  addAutomation={addAutomation}
+                  removeAutomation={removeAutomation}
+                  automationError={automationError}
+                  setAutomationError={setAutomationError}
                 />
               } />
               <Route path="/alerts" element={<AlertHistory alerts={alerts} guestMode={guestMode} />} />
