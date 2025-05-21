@@ -8,14 +8,12 @@ import Help from './pages/Help';
 import AddDevicePage from './pages/AddDevicePage';
 import Device from './domain/Device';
 import './App.css';
-
 import { useNavigate } from 'react-router-dom';
 
 function AppWrapper() {
   const navigate = useNavigate();
   return <App navigate={navigate} />;
 }
-
 
 const storage = {
   isElectron: window && window.process && window.process.type,
@@ -100,6 +98,11 @@ function App({ navigate }) {
   const [adminPassword, setAdminPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
+  const [alerts, setAlerts] = useState(() => {
+    const savedAlerts = localStorage.getItem('smartHomeAlerts');
+    return savedAlerts ? JSON.parse(savedAlerts) : [];
+  });
+
   const [devices, setDevices] = useState(() => {
     const savedDevices = localStorage.getItem('smartHomeDevices');
 
@@ -127,6 +130,19 @@ function App({ navigate }) {
     ];
   });
 
+  const addAlert = (message) => {
+    setAlerts((prevAlerts) => {
+      const timestamp = new Date().toLocaleString(); // Add a timestamp
+      const newAlert = `${timestamp} – ${message}`;
+      const updatedAlerts = [newAlert, ...prevAlerts]; // Add the new alert to the top of the list
+
+      // Save to local storage
+      localStorage.setItem('smartHomeAlerts', JSON.stringify(updatedAlerts));
+
+      return updatedAlerts;
+    });
+  };
+
   // Helper function to ensure we're working with Device instances
   const ensureDeviceInstance = (device) => {
     if (device instanceof Device) return device;
@@ -142,42 +158,26 @@ function App({ navigate }) {
     });
   };
 
-  const [alerts, setAlerts] = useState([
-    '08:30, March 22 – Motion detected in the living room.',
-    '22:15, March 21 – High energy usage in the kitchen.',
-    '18:45, March 21 – Garden watering system activated.',
-    '14:10, March 21 – Electricity bill due in 3 days.',
-    '23:00, March 20 – Front door unlocked at night.',
-    '17:30, March 20 – Smart lights turned on at sunset.',
-    '12:00, March 19 – Smoke detected in the kitchen.',
-    '09:20, March 18 – Guest access enabled for John Doe.',
-    '06:45, March 18 – Temperature in the house dropped below 15°C.',
-    '19:10, March 17 – Washing machine cycle completed.',
-    '02:30, March 17 – Unusual activity detected near the backyard.'
-  ]);
 
-const requestAdminLogin = () => {
-  if (guestMode) {
-    // Force close + reset password field before reopening
-    setShowLoginPrompt(false);
-    setAdminPassword('');
-    setLoginError('');
+  const requestAdminLogin = () => {
+    if (guestMode) {
+      // Force close + reset password field before reopening
+      setShowLoginPrompt(false);
+      setAdminPassword('');
+      setLoginError('');
 
-    setTimeout(() => {
-      setShowLoginPrompt(true); // Reopens popup after DOM updates
-    }, 50); // Short delay ensures remount
-  } else {
-    const confirmSwitch = window.confirm('Are you sure you want to switch to Guest Mode?');
-    if (confirmSwitch) {
-      setIsAdmin(false);
-      setGuestMode(true);
-      navigate('/');
+      setTimeout(() => {
+        setShowLoginPrompt(true); // Reopens popup after DOM updates
+      }, 50); // Short delay ensures remount
+    } else {
+      const confirmSwitch = window.confirm('Are you sure you want to switch to Guest Mode?');
+      if (confirmSwitch) {
+        setIsAdmin(false);
+        setGuestMode(true);
+        navigate('/');
+      }
     }
-  }
-};
-
-
-
+  };
 
     const handleAdminLogin = () => {
     if (adminPassword === '123') {
@@ -196,7 +196,7 @@ const requestAdminLogin = () => {
 
 
   const addDevice = ({ name, type, room, visibility }) => {
-    setDevices(prev => {
+    setDevices((prev) => {
       const newDevice = new Device({
         id: Date.now(),
         name,
@@ -205,9 +205,10 @@ const requestAdminLogin = () => {
         owner: 'admin',
         functionState: getDefaultStatus(type),
         energyStatus: 'normal',
-        visibility: visibility || 'public'
+        visibility: visibility || 'public',
       });
-
+  
+      addAlert(`New ${type} added: ${name} in ${room}`);
       const newDevices = [...prev, newDevice];
       localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
       return newDevices;
@@ -226,39 +227,59 @@ const requestAdminLogin = () => {
     });
   };
 
-const toggleCameraRecording = (id) => {
-  setDevices((prev) => {
-    const newDevices = prev.map(d =>
-      d.id === id && d.type === 'Camera'
-        ? ensureDeviceInstance({ ...d, functionState: d.functionState === 'recording' ? 'idle' : 'recording' })
-        : ensureDeviceInstance(d)
-    );
-    localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
-    return newDevices;
-  });
-};
+  const toggleCameraRecording = (id) => {
+    setDevices((prev) => {
+      const newDevices = prev.map((d) =>
+        d.id === id && d.type === 'Camera'
+          ? ensureDeviceInstance({ ...d, functionState: d.functionState === 'recording' ? 'idle' : 'recording' })
+          : ensureDeviceInstance(d)
+      );
+  
+      const toggledDevice = prev.find((d) => d.id === id && d.type === 'Camera');
+      if (toggledDevice) {
+        const newState = toggledDevice.functionState === 'recording' ? 'idle' : 'recording';
+        addAlert(`${toggledDevice.name} (Camera) is now ${newState}`);
+      }
+  
+      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+      return newDevices;
+    });
+  };
 
 const toggleLight = (id) => {
   setDevices((prev) => {
-    const newDevices = prev.map(d =>
+    const newDevices = prev.map((d) =>
       d.id === id && d.type === 'Light'
         ? ensureDeviceInstance({ ...d, functionState: d.functionState === 'on' ? 'off' : 'on' })
         : ensureDeviceInstance(d)
     );
+
+    const toggledDevice = prev.find((d) => d.id === id && d.type === 'Light');
+    if (toggledDevice) {
+      const newState = toggledDevice.functionState === 'on' ? 'off' : 'on';
+      addAlert(`${toggledDevice.name} (Light) turned ${newState}`);
+    }
+
     localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
     return newDevices;
   });
 };
 
 
-
 const toggleDoor = (id) => {
   setDevices((prev) => {
-    const newDevices = prev.map(d =>
+    const newDevices = prev.map((d) =>
       d.id === id && d.type === 'Door'
         ? ensureDeviceInstance({ ...d, functionState: d.functionState === 'locked' ? 'unlocked' : 'locked' })
         : ensureDeviceInstance(d)
     );
+
+    const toggledDevice = prev.find((d) => d.id === id && d.type === 'Door');
+    if (toggledDevice) {
+      const newState = toggledDevice.functionState === 'locked' ? 'unlocked' : 'locked';
+      addAlert(`${toggledDevice.name} (Door) is now ${newState}`);
+    }
+
     localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
     return newDevices;
   });
@@ -266,47 +287,76 @@ const toggleDoor = (id) => {
 
 const toggleAlarm = (id) => {
   setDevices((prev) => {
-    const newDevices = prev.map(d =>
+    const newDevices = prev.map((d) =>
       d.id === id && d.type === 'Alarm'
         ? ensureDeviceInstance({ ...d, functionState: d.functionState === 'enabled' ? 'disabled' : 'enabled' })
         : ensureDeviceInstance(d)
     );
+
+    const toggledDevice = prev.find((d) => d.id === id && d.type === 'Alarm');
+    if (toggledDevice) {
+      const newState = toggledDevice.functionState === 'enabled' ? 'disabled' : 'enabled';
+      addAlert(`${toggledDevice.name} (Alarm) is now ${newState}`);
+    }
+
     localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
     return newDevices;
   });
 };
 
-
 const setThermostat = (id, temp) => {
   setDevices((prev) => {
-    const newDevices = prev.map(d =>
+    const newDevices = prev.map((d) =>
       d.id === id && d.type === 'Thermostat'
         ? ensureDeviceInstance({ ...d, functionState: temp })
         : ensureDeviceInstance(d)
     );
+
+    const updatedDevice = prev.find((d) => d.id === id && d.type === 'Thermostat');
+    if (updatedDevice) {
+      addAlert(`${updatedDevice.name} (Thermostat) set to ${temp}°C`);
+    }
+
     localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
     return newDevices;
   });
 };
 
-
   const editDevice = (id, newDetails) => {
-    setDevices(prev => {
-      const newDevices = prev.map(d => 
-        d.id === id ? ensureDeviceInstance({ ...d, ...newDetails }) : ensureDeviceInstance(d)
-      );
+    setDevices((prev) => {
+      const newDevices = prev.map((d) => {
+        if (d.id === id) {
+          const changes = [];
+          if (d.name !== newDetails.name) changes.push(`name changed to ${newDetails.name}`);
+          if (d.room !== newDetails.room) changes.push(`room changed to ${newDetails.room}`);
+          if (d.type !== newDetails.type) changes.push(`type changed to ${newDetails.type}`);
+
+          if (changes.length > 0) {
+            addAlert(`${d.name} (${d.type}) updated: ${changes.join(', ')}`);
+          }
+
+          return ensureDeviceInstance({ ...d, ...newDetails });
+        }
+        return ensureDeviceInstance(d);
+      });
+
       localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
       return newDevices;
     });
   };
 
   const removeDevice = (id) => {
-    setDevices(prev => {
-      const newDevices = prev.filter(d => d.id !== id).map(ensureDeviceInstance);
-      localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
-      return newDevices;
-    });
-  };
+  setDevices((prev) => {
+    const deviceToRemove = prev.find((d) => d.id === id);
+    if (deviceToRemove) {
+      addAlert(`${deviceToRemove.name} (${deviceToRemove.type}) in ${deviceToRemove.room} was removed`);
+    }
+
+    const newDevices = prev.filter((d) => d.id !== id).map(ensureDeviceInstance);
+    localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
+    return newDevices;
+  });
+};
 
   return (
       <div className="app-container">
@@ -358,7 +408,7 @@ const setThermostat = (id, temp) => {
                   deviceTypes={DEVICE_TYPES}
                 />
               } />
-              <Route path="/alerts" element={<AlertHistory alerts={alerts} guestMode={guestMode} />} />
+              <Route path="/alerts" element={<AlertHistory alerts={alerts} setAlerts={setAlerts} guestMode={guestMode} />} />
               <Route path="/power" element={<PowerUsage devices={devices} />} />
               <Route path="/help" element={<Help />} />
               <Route path="/add-device" element={
