@@ -508,4 +508,3 @@ function AutomationModal({ devices, addAutomation, onClose, setAutomationError, 
 
 export default ManageDevices;
 
-localStorage.removeItem('smartHomeAutomations');
