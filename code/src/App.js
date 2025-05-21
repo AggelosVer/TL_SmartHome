@@ -422,36 +422,63 @@ const setThermostat = (id, temp) => {
     }
   };
 
-  // --- AUTOMATION EXECUTION LOGIC ---
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      const currentTime = now.toTimeString().slice(0, 5); // "HH:MM"
+useEffect(() => {
+  const interval = setInterval(() => {
+    const now = new Date();
+    const currentTime = now.toTimeString().slice(0, 5); // "HH:MM"
 
-      automations.forEach(automation => {
-        automation.actions.forEach(action => {
-          const device = devices.find(d => d.id === action.deviceId);
-          if (!device) return;
+    automations.forEach(automation => {
+      automation.actions.forEach(action => {
+        const device = devices.find(d => d.id === action.deviceId);
+        if (!device) return;
 
-          // Thermostat: set temperature at time
-          if (
-            device.type === 'Thermostat' &&
-            action.action === 'set temperature' &&
-            action.triggerType === 'time' &&
-            action.triggerValue === currentTime &&
-            typeof action.targetTemp === 'number'
-          ) {
-            updateDeviceStatus(device.id, action.targetTemp);
+        // ✅ Thermostat logic (already present)
+        if (
+          device.type === 'Thermostat' &&
+          action.action === 'set temperature' &&
+          action.triggerType === 'time' &&
+          action.triggerValue === currentTime &&
+          typeof action.targetTemp === 'number'
+        ) {
+          updateDeviceStatus(device.id, action.targetTemp);
+        }
+
+        // ✅ 🔥 Add this block: handle other device types
+        if (
+          action.triggerType === 'time' &&
+          action.triggerValue === currentTime
+        ) {
+          if (device.type !== 'Thermostat') {
+            // Apply action for Light, Door, Camera, Alarm
+            let newState = device.functionState;
+
+            switch (device.type) {
+              case 'Light':
+                newState = action.action === 'on' ? 'on' : 'off';
+                break;
+              case 'Door':
+                newState = action.action === 'unlock' ? 'unlocked' : 'locked';
+                break;
+              case 'Camera':
+                newState = action.action === 'start recording' ? 'recording' : 'idle';
+                break;
+              case 'Alarm':
+                newState = action.action === 'enable' ? 'enabled' : 'disabled';
+                break;
+              default:
+                return;
+            }
+
+            updateDeviceStatus(device.id, newState);
           }
-
-         
-        });
+        }
       });
-    }, 10000); // Check every 10 seconds
+    });
+  }, 10000); // Every 10 seconds
 
-    return () => clearInterval(interval);
-  }, [automations, devices]);
-  // --- END AUTOMATION EXECUTION LOGIC ---
+  return () => clearInterval(interval);
+}, [automations, devices]);
+
 
   return (
       <div className="app-container">
