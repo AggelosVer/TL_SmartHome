@@ -106,16 +106,15 @@ function App({ navigate }) {
     if (savedDevices) {
       const parsed = JSON.parse(savedDevices);
       return parsed.map(d => new Device({
-      id: d.id,
-      name: d.name,
-      room: d.room,
-      type: d.type,
-      owner: d.owner || 'admin',
-      functionState: d.functionState ?? getDefaultStatus(d.type),
-      energyStatus: d.energyStatus || 'normal',
-      visibility: d.visibility || 'public'
-    }));
-
+        id: d.id,
+        name: d.name,
+        room: d.room,
+        type: d.type,
+        owner: d.owner || 'admin',
+        functionState: d.functionState ?? getDefaultStatus(d.type),
+        energyStatus: d.energyStatus || 'normal',
+        visibility: d.visibility || 'public'
+      }));
     }
 
     return [
@@ -128,9 +127,20 @@ function App({ navigate }) {
     ];
   });
 
-
-  // const isDisabled = guestMode && (device.visibility || 'public') === 'private';
-
+  // Helper function to ensure we're working with Device instances
+  const ensureDeviceInstance = (device) => {
+    if (device instanceof Device) return device;
+    return new Device({
+      id: device.id,
+      name: device.name,
+      room: device.room,
+      type: device.type,
+      owner: device.owner || 'admin',
+      functionState: device.functionState ?? getDefaultStatus(device.type),
+      energyStatus: device.energyStatus || 'normal',
+      visibility: device.visibility || 'public'
+    });
+  };
 
   const [alerts, setAlerts] = useState([
     '08:30, March 22 – Motion detected in the living room.',
@@ -208,7 +218,9 @@ const requestAdminLogin = () => {
 
   const updateDeviceStatus = (id, newStatus) => {
     setDevices(prev => {
-      const newDevices = prev.map(d => d.id === id ? { ...d, status: newStatus } : d);
+      const newDevices = prev.map(d => 
+        d.id === id ? ensureDeviceInstance({ ...d, functionState: newStatus }) : ensureDeviceInstance(d)
+      );
       localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
       return newDevices;
     });
@@ -218,8 +230,8 @@ const toggleCameraRecording = (id) => {
   setDevices((prev) => {
     const newDevices = prev.map(d =>
       d.id === id && d.type === 'Camera'
-        ? { ...d, functionState: d.functionState === 'recording' ? 'idle' : 'recording' }
-        : d
+        ? ensureDeviceInstance({ ...d, functionState: d.functionState === 'recording' ? 'idle' : 'recording' })
+        : ensureDeviceInstance(d)
     );
     localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
     return newDevices;
@@ -230,8 +242,8 @@ const toggleLight = (id) => {
   setDevices((prev) => {
     const newDevices = prev.map(d =>
       d.id === id && d.type === 'Light'
-        ? { ...d, functionState: d.functionState === 'on' ? 'off' : 'on' }
-        : d
+        ? ensureDeviceInstance({ ...d, functionState: d.functionState === 'on' ? 'off' : 'on' })
+        : ensureDeviceInstance(d)
     );
     localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
     return newDevices;
@@ -244,8 +256,8 @@ const toggleDoor = (id) => {
   setDevices((prev) => {
     const newDevices = prev.map(d =>
       d.id === id && d.type === 'Door'
-        ? { ...d, functionState: d.functionState === 'locked' ? 'unlocked' : 'locked' }
-        : d
+        ? ensureDeviceInstance({ ...d, functionState: d.functionState === 'locked' ? 'unlocked' : 'locked' })
+        : ensureDeviceInstance(d)
     );
     localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
     return newDevices;
@@ -256,8 +268,8 @@ const toggleAlarm = (id) => {
   setDevices((prev) => {
     const newDevices = prev.map(d =>
       d.id === id && d.type === 'Alarm'
-        ? { ...d, functionState: d.functionState === 'enabled' ? 'disabled' : 'enabled' }
-        : d
+        ? ensureDeviceInstance({ ...d, functionState: d.functionState === 'enabled' ? 'disabled' : 'enabled' })
+        : ensureDeviceInstance(d)
     );
     localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
     return newDevices;
@@ -269,8 +281,8 @@ const setThermostat = (id, temp) => {
   setDevices((prev) => {
     const newDevices = prev.map(d =>
       d.id === id && d.type === 'Thermostat'
-        ? { ...d, functionState: temp }
-        : d
+        ? ensureDeviceInstance({ ...d, functionState: temp })
+        : ensureDeviceInstance(d)
     );
     localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
     return newDevices;
@@ -280,7 +292,9 @@ const setThermostat = (id, temp) => {
 
   const editDevice = (id, newDetails) => {
     setDevices(prev => {
-      const newDevices = prev.map(d => d.id === id ? { ...d, ...newDetails } : d);
+      const newDevices = prev.map(d => 
+        d.id === id ? ensureDeviceInstance({ ...d, ...newDetails }) : ensureDeviceInstance(d)
+      );
       localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
       return newDevices;
     });
@@ -288,7 +302,7 @@ const setThermostat = (id, temp) => {
 
   const removeDevice = (id) => {
     setDevices(prev => {
-      const newDevices = prev.filter(d => d.id !== id);
+      const newDevices = prev.filter(d => d.id !== id).map(ensureDeviceInstance);
       localStorage.setItem('smartHomeDevices', JSON.stringify(newDevices));
       return newDevices;
     });
@@ -344,9 +358,9 @@ const setThermostat = (id, temp) => {
                   deviceTypes={DEVICE_TYPES}
                 />
               } />
-              <Route path="/alerts" element={<AlertHistory guestMode={guestMode} alerts={alerts} />} />
-              <Route path="/power" element={<PowerUsage guestMode={guestMode} />} />
-              <Route path="/help" element={<Help guestMode={guestMode} />} />
+              <Route path="/alerts" element={<AlertHistory alerts={alerts} guestMode={guestMode} />} />
+              <Route path="/power" element={<PowerUsage devices={devices} />} />
+              <Route path="/help" element={<Help />} />
               <Route path="/add-device" element={
                 <AddDevicePage addDevice={addDevice} deviceTypes={DEVICE_TYPES} />
               } />
