@@ -10,8 +10,6 @@ const ACTIONS_BY_TYPE = {
   Alarm: ['enable', 'disable'],
 };
 
-const AUTOMATIONS_PER_PAGE = 2; // Show 2 automations per page
-
 function ManageDevices({
   devices,
   editDevice,
@@ -27,7 +25,6 @@ function ManageDevices({
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', type: '', room: '' });
   const [showAutomationModal, setShowAutomationModal] = useState(false);
-  const [automationPage, setAutomationPage] = useState(1);
 
   const startEdit = (device) => {
     setEditingId(device.id);
@@ -44,15 +41,14 @@ function ManageDevices({
     setEditingId(null);
   };
 
-  // Pagination logic
-  const totalPages = Math.ceil(automations.length / AUTOMATIONS_PER_PAGE);
-  const paginatedAutomations = automations.slice(
-    (automationPage - 1) * AUTOMATIONS_PER_PAGE,
-    automationPage * AUTOMATIONS_PER_PAGE
-  );
-
   return (
-    <div className="manage-devices-container">
+    <div className="manage-devices-container" style={{ 
+      height: 'calc(100vh - 64px)', // Subtract header height
+      overflowY: 'auto',
+      padding: '20px',
+      position: 'relative',
+      paddingBottom: '300px' // Significantly increased padding for much more scrolling space
+    }}>
       <h2>Manage Devices</h2>
 
       {/* Floating Buttons */}
@@ -117,47 +113,20 @@ function ManageDevices({
       {/* Automations Section */}
       <div style={{ marginTop: 40 }}>
         <h3>Automations</h3>
-        {/* Page Indicator on Top */}
-        {totalPages > 1 && (
-          <div style={{ display: 'flex', gap: 6, marginBottom: 16, alignItems: 'center' }}>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-                key={i}
-                onClick={() => setAutomationPage(i + 1)}
-                style={{
-                  background: automationPage === i + 1 ? '#1a5cff' : '#fff',
-                  color: automationPage === i + 1 ? '#fff' : '#1a5cff',
-                  border: '1px solid #1a5cff',
-                  borderRadius: 6,
-                  padding: '4px 12px',
-                  cursor: 'pointer',
-                  fontWeight: automationPage === i + 1 ? 'bold' : 'normal'
-                }}
-              >
-                {i + 1}
-              </button>
-            ))}
-            <span style={{ color: '#06549b', marginLeft: 12 }}>
-              Page {automationPage} / {totalPages}
-            </span>
-          </div>
-        )}
         <div
           style={{
             display: 'flex',
             gap: 24,
             alignItems: 'flex-start',
-            flexWrap: 'nowrap',
-            overflowX: 'auto',
+            flexWrap: 'wrap',
             maxWidth: 'calc(100vw - 300px)',
-            minHeight: 320,
             paddingBottom: 8,
           }}
         >
-          {paginatedAutomations.length === 0 ? (
+          {automations.length === 0 ? (
             <div style={{ color: '#06549b', marginBottom: 12 }}>No automations set.</div>
           ) : (
-            paginatedAutomations.map((automation, idx) => (
+            automations.map((automation, idx) => (
               <div
                 key={automation.name + idx}
                 style={{
@@ -168,6 +137,7 @@ function ManageDevices({
                   minWidth: 260,
                   maxWidth: 340,
                   marginRight: 16,
+                  marginBottom: 16,
                   maxHeight: 260,
                   overflowY: 'auto',
                   boxSizing: 'border-box',
@@ -203,7 +173,7 @@ function ManageDevices({
                               ? `Set to ${a.targetTemp}°C`
                               : a.action}
                           </td>
-                          <td>{/* Optionally, allow removing individual actions */}</td>
+                          <td></td>
                         </tr>
                       );
                     })}
@@ -219,55 +189,12 @@ function ManageDevices({
                     marginTop: 10,
                     cursor: 'pointer',
                   }}
-                  onClick={() => removeAutomation((automationPage - 1) * AUTOMATIONS_PER_PAGE + idx)}
+                  onClick={() => removeAutomation(idx)}
                 >
                   Remove Automation
                 </button>
               </div>
             ))
-          )}
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 16 }}>
-              <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setAutomationPage(i + 1)}
-                    style={{
-                      background: automationPage === i + 1 ? '#1a5cff' : '#fff',
-                      color: automationPage === i + 1 ? '#fff' : '#1a5cff',
-                      border: '1px solid #1a5cff',
-                      borderRadius: 6,
-                      padding: '4px 12px',
-                      cursor: 'pointer',
-                      fontWeight: automationPage === i + 1 ? 'bold' : 'normal'
-                    }}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-              <div>
-                <button
-                  disabled={automationPage === 1}
-                  onClick={() => setAutomationPage(p => Math.max(1, p - 1))}
-                  style={{ marginRight: 8, padding: '6px 16px', borderRadius: 6, border: 'none', background: '#1a5cff', color: '#fff', cursor: 'pointer' }}
-                >
-                  Previous
-                </button>
-                <span style={{ color: '#fff', marginRight: 8 }}>
-                  Page {automationPage} / {totalPages}
-                </span>
-                <button
-                  disabled={automationPage === totalPages}
-                  onClick={() => setAutomationPage(p => Math.min(totalPages, p + 1))}
-                  style={{ padding: '6px 16px', borderRadius: 6, border: 'none', background: '#1a5cff', color: '#fff', cursor: 'pointer' }}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
           )}
         </div>
         {automationError && (
@@ -282,7 +209,7 @@ function ManageDevices({
           addAutomation={addAutomation}
           onClose={() => setShowAutomationModal(false)}
           setAutomationError={setAutomationError}
-          automations={automations} // Pass automations prop
+          automations={automations}
         />
       )}
     </div>
