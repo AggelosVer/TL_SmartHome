@@ -536,7 +536,41 @@ useEffect(() => {
                 onChange={(e) => setAdminPassword(e.target.value)}
                 autoFocus
               />
-              <button onClick={handleAdminLogin}>Login</button>
+              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                <button
+                  style={{
+                    flex: 1,
+                    background: '#1a5cff',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '12px',
+                    fontSize: '0.95rem',
+                    fontWeight: 500,
+                    cursor: 'pointer'
+                  }}
+                  onClick={handleAdminLogin}
+                >
+                  Login
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    flex: 1,
+                    background: '#aaa',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '12px',
+                    fontSize: '0.95rem',
+                    fontWeight: 500,
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setShowLoginPrompt(false)}
+                >
+                  Cancel
+                </button>
+              </div>
               {loginError && <p className="error">{loginError}</p>}
             </div>
           </div>
