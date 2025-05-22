@@ -432,7 +432,7 @@ useEffect(() => {
         const device = devices.find(d => d.id === action.deviceId);
         if (!device) return;
 
-        // ✅ Thermostat logic (already present)
+
         if (
           device.type === 'Thermostat' &&
           action.action === 'set temperature' &&
@@ -443,7 +443,7 @@ useEffect(() => {
           updateDeviceStatus(device.id, action.targetTemp);
         }
 
-        // ✅ 🔥 Add this block: handle other device types
+
         if (
           action.triggerType === 'time' &&
           action.triggerValue === currentTime
