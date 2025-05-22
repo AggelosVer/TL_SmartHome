@@ -1,8 +1,23 @@
 .manage-devices-container {
-  padding: 24px 32px 24px 32px;
+  padding: 24px 32px;
   min-width: 1020px;
   min-height: 800px;
   box-sizing: border-box;
+  background: #f8f9fa;
+}
+
+.manage-devices-container h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 24px;
+}
+
+.manage-devices-container h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 32px 0 16px 0;
 }
 
 .add-device-form {
@@ -20,17 +35,27 @@
   outline: none;
 }
 .add-device-form button {
-  background: #1a5cff;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
   padding: 8px 18px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 .add-device-form button:hover {
-  background: #0d3fa6;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+.add-device-form button:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 .device-list-card {
   background: #06549b;
@@ -56,78 +81,379 @@
 
 .manage-device-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
   min-width: 900px;
   margin-top: 18px;
 }
 
 .manage-device-tile {
-  background: #06549b;
-  color: #fff;
-  border-radius: 14px;
-  padding: 20px 14px 18px 14px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  background: #ffffff;
+  color: #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   min-height: 120px;
   min-width: 220px;
   position: relative;
-  transition: box-shadow 0.2s;
+  transition: all 0.2s ease;
+  border: 1px solid #eaeaea;
 }
+
 .manage-device-tile:hover {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
+
+.device-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.device-type, .device-room {
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+  color: #666;
+}
+
+.device-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: auto;
+}
+
+.device-controls button {
+  background: #f5f5f5;
+  color: #1a1a1a;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.device-controls button:hover {
+  background: #eaeaea;
+  transform: translateY(-1px);
+}
+
+.device-controls .remove-btn {
+  background: #fff1f0;
+  color: #e53935;
+  border-color: #ffcdd2;
+}
+
+.device-controls .remove-btn:hover {
+  background: #ffe4e2;
+}
+
 .edit-device-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
 }
-.edit-device-form input {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid #b0c4de;
-  font-size: 1rem;
+
+.edit-device-form input,
+.edit-device-form select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #eaeaea;
+  font-size: 0.95rem;
   outline: none;
+  background: #ffffff;
+  color: #1a1a1a;
+  transition: all 0.2s ease;
 }
+
+.edit-device-form input:focus,
+.edit-device-form select:focus {
+  border-color: #1a5cff;
+  box-shadow: 0 0 0 2px rgba(26, 92, 255, 0.1);
+}
+
 .edit-device-form button {
-  background: #1a5cff;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 0;
-  font-size: 1rem;
+  background: #f5f5f5;
+  color: #1a1a1a;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
-  margin-top: 4px;
-  margin-right: 8px;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
 }
-.edit-device-form button[type='button'] {
-  background: #aaa;
-  margin-left: 8px;
+
+.edit-device-form button:hover {
+  background: #eaeaea;
+  transform: translateY(-1px);
 }
-.device-controls {
+
+.add-device-fab {
+  background: rgba(255, 255, 255, 0.1);
+  color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.add-device-fab:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.add-device-fab:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode styles */
+.dark-mode .manage-devices-container {
+  background: #1a1a1a;
+}
+
+.dark-mode .manage-devices-container h2,
+.dark-mode .manage-devices-container h3 {
+  color: #ffffff;
+}
+
+.dark-mode .manage-device-tile {
+  background: #2d2d2d;
+  color: #ffffff;
+  border-color: #404040;
+}
+
+.dark-mode .manage-device-tile:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .device-title {
+  color: #ffffff;
+}
+
+.dark-mode .device-type,
+.dark-mode .device-room {
+  color: #b3b3b3;
+}
+
+.dark-mode .device-controls button {
+  background: #404040;
+  color: #ffffff;
+  border-color: #505050;
+}
+
+.dark-mode .device-controls button:hover {
+  background: #505050;
+}
+
+.dark-mode .device-controls .remove-btn {
+  background: rgba(229, 57, 53, 0.1);
+  color: #ff8a80;
+  border-color: rgba(229, 57, 53, 0.2);
+}
+
+.dark-mode .device-controls .remove-btn:hover {
+  background: rgba(229, 57, 53, 0.2);
+}
+
+.dark-mode .edit-device-form input,
+.dark-mode .edit-device-form select {
+  background: #2d2d2d;
+  color: #ffffff;
+  border-color: #404040;
+}
+
+.dark-mode .edit-device-form input:focus,
+.dark-mode .edit-device-form select:focus {
+  border-color: #1a5cff;
+  box-shadow: 0 0 0 2px rgba(26, 92, 255, 0.2);
+}
+
+.dark-mode .edit-device-form button {
+  background: #404040;
+  color: #ffffff;
+  border-color: #505050;
+}
+
+.dark-mode .edit-device-form button:hover {
+  background: #505050;
+}
+
+/* Automation Styles */
+.automation-tile {
+  background: #ffffff;
+  color: #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 120px;
+  min-width: 260px;
+  max-width: 340px;
+  position: relative;
+  transition: all 0.2s ease;
+  border: 1px solid #eaeaea;
 }
-.device-controls .remove-btn {
-  background: #e53935;
-  color: #fff;
+
+.automation-tile:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
-.device-controls button {
-  background: #1a5cff;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 18px;
-  font-size: 1rem;
+
+.automation-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+
+.automation-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.automation-action {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.action-device {
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.action-trigger {
+  color: #1a5cff;
+}
+
+.action-type {
+  color: #666;
+}
+
+.remove-automation-btn {
+  background: #f5f5f5;
+  color: #e53935;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+  margin-top: auto;
 }
-.device-controls button:hover {
-  background: #0d3fa6;
+
+.remove-automation-btn:hover {
+  background: #ffebee;
+  transform: translateY(-1px);
+}
+
+.automation-error {
+  color: #e53935;
+  margin-top: 8px;
+  max-width: 320px;
+  font-size: 0.95rem;
+}
+
+/* Dark mode styles for automations */
+.dark-mode .automation-tile {
+  background: #2d2d2d;
+  color: #ffffff;
+  border-color: #404040;
+}
+
+.dark-mode .automation-tile:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .automation-title {
+  color: #ffffff;
+}
+
+.dark-mode .automation-action {
+  background: #404040;
+}
+
+.dark-mode .action-device {
+  color: #ffffff;
+}
+
+.dark-mode .action-trigger {
+  color: #1a5cff;
+}
+
+.dark-mode .action-type {
+  color: #b3b3b3;
+}
+
+.dark-mode .remove-automation-btn {
+  background: #404040;
+  color: #ff6b6b;
+  border-color: #505050;
+}
+
+.dark-mode .remove-automation-btn:hover {
+  background: #4a2f2f;
+}
+
+/* Dark mode styles for add-device-form */
+.dark-mode .add-device-form button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .add-device-form button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.dark-mode .add-device-form button:active {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .add-device-fab {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .add-device-fab:hover {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.dark-mode .add-device-fab:active {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 } 

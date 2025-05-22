@@ -13,15 +13,19 @@ function AlertHistory({ alerts, setAlerts }) {
       <div className="alert-list">
         {alerts.length > 0 ? (
           alerts.map((alert, idx) => (
-            <div className="alert-item" key={idx}>{alert}</div>
+            <div className="alert-item" key={idx}>
+              <div className="alert-content">{alert}</div>
+            </div>
           ))
         ) : (
-          <p>No alerts to display.</p>
+          <div className="no-alerts">No alerts to display.</div>
         )}
       </div>
-      <button className="clear-alerts-button" onClick={clearAlerts}>
-        Clear Alerts
-      </button>
+      {alerts.length > 0 && (
+        <button className="clear-alerts-button" onClick={clearAlerts}>
+          Clear Alerts
+        </button>
+      )}
     </div>
   );
 }

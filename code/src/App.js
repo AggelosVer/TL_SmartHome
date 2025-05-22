@@ -43,26 +43,36 @@ const Sidebar = ({ guestMode, requestAdminLogin }) => {
         <ul>
           {/* Always visible */}
           <li className={location.pathname === '/' ? 'active' : ''}>
-            <Link to="/">Homepage</Link>
+            <Link to="/">
+              Homepage
+            </Link>
           </li>
 
           {/* Admin-only links */}
           {!guestMode && (
             <>
               <li className={location.pathname === '/manage' ? 'active' : ''}>
-                <Link to="/manage">Manage Devices</Link>
+                <Link to="/manage">
+                  Manage Devices
+                </Link>
               </li>
               <li className={location.pathname === '/alerts' ? 'active' : ''}>
-                <Link to="/alerts">Alert History</Link>
+                <Link to="/alerts">
+                  Alert History
+                </Link>
               </li>
               <li className={location.pathname === '/power' ? 'active' : ''}>
-                <Link to="/power">Power Usage</Link>
+                <Link to="/power">
+                  Power Usage
+                </Link>
               </li>
             </>
           )}
           <li className={location.pathname === '/help' ? 'active' : ''}>
-            <Link to="/help">Help</Link>
-         </li>
+            <Link to="/help">
+              Help
+            </Link>
+          </li>
         </ul>
       </nav>
 
@@ -97,6 +107,20 @@ function App({ navigate }) {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // Save dark mode preference
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    document.body.className = darkMode ? 'dark-mode' : '';
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(prev => !prev);
+  };
 
   const [alerts, setAlerts] = useState(() => {
     const savedAlerts = localStorage.getItem('smartHomeAlerts');
@@ -481,8 +505,20 @@ useEffect(() => {
 
 
   return (
-      <div className="app-container">
-        <div className="title-bar">Smart Home</div>
+      <div className={`app-container ${darkMode ? 'dark-mode' : ''}`}>
+        <div className="title-bar">
+          <div className="title-left">
+            <span role="img" aria-label="home">🏠</span>
+            Smart Home
+          </div>
+          <button 
+            className="dark-mode-toggle"
+            onClick={toggleDarkMode}
+            title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+        </div>
         <div className="app-content-row">
           <Sidebar
             guestMode={guestMode}
