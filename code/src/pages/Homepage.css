@@ -2,81 +2,104 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  height: calc(100vh - 60px); /* Adjust for title bar height */
+  height: calc(100vh - 60px);
   min-height: 0;
-  padding-bottom: 140px; /* Increased to ensure last device is visible above the floating button */
+  padding: 24px 32px;
+  padding-bottom: 140px;
 }
 
 .homepage-container {
-  padding: 24px 32px 24px 32px;
   min-width: 1020px;
   min-height: 800px;
   box-sizing: border-box;
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: #f8f9fa;
 }
 
 .device-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
   min-width: 900px;
 }
 
 .device-tile {
-  background: #06549b;
-  color: #fff;
-  border-radius: 14px;
-  padding: 20px 14px 18px 14px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  background: #ffffff;
+  color: #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-height: 150px;
+  min-height: 120px;
   min-width: 220px;
   position: relative;
-  transition: box-shadow 0.2s;
+  transition: all 0.2s ease;
+  border: 1px solid #eaeaea;
 }
+
 .device-tile:hover {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.device-tile.disabled {
+  opacity: 0.6;
+  background: #f5f5f5;
 }
 
 .device-title {
-  font-size: 1.3rem;
-  font-weight: bold;
-  margin-bottom: 6px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
 }
+
 .device-type, .device-room {
-  font-size: 1rem;
-  margin-bottom: 2px;
-  opacity: 0.85;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+  color: #666;
 }
+
 .device-status {
-  font-size: 1.1rem;
-  margin: 10px 0 14px 0;
+  font-size: 1rem;
+  margin: 12px 0 16px 0;
   font-weight: 500;
+  color: #1a5cff;
 }
+
 .device-controls {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  flex-wrap: wrap;
+  margin-top: auto;
 }
+
 .device-controls button {
-  background: #1a5cff;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 18px;
-  font-size: 1rem;
+  background: #f5f5f5;
+  color: #1a1a1a;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
 }
-.device-controls button:hover {
-  background: #0d3fa6;
+
+.device-controls button:hover:not(:disabled) {
+  background: #eaeaea;
+  transform: translateY(-1px);
 }
+
+.device-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .device-controls input[type="range"] {
   accent-color: #1a5cff;
   width: 120px;
@@ -84,33 +107,92 @@
 }
 
 .add-device-fab {
+  background: rgba(255, 255, 255, 0.1);
+  color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   position: fixed;
   right: 40px;
   bottom: 40px;
-  background: #1a5cff;
-  color: #fff;
-  border: none;
-  border-radius: 28px;
-  padding: 16px 28px;
-  font-size: 1.15rem;
-  font-weight: 600;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
-  cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
   z-index: 100;
 }
-.add-device-fab:hover {
-  background: #0d3fa6;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-} 
 
-.device-tile.disabled {
-  opacity: 0.5;
-  pointer-events: none;
+.add-device-fab:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
-.device-controls button[disabled],
-.device-controls input[disabled] {
-  background-color: #ccc;
-  cursor: not-allowed;
+.add-device-fab:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode styles */
+.dark-mode .homepage-container {
+  background: #1a1a1a;
+}
+
+.dark-mode .device-tile {
+  background: #2d2d2d;
+  color: #ffffff;
+  border-color: #404040;
+}
+
+.dark-mode .device-tile:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .device-tile.disabled {
+  background: #2d2d2d;
+  opacity: 0.6;
+}
+
+.dark-mode .device-title {
+  color: #ffffff;
+}
+
+.dark-mode .device-type,
+.dark-mode .device-room {
+  color: #b3b3b3;
+}
+
+.dark-mode .device-status {
+  color: #1a5cff;
+}
+
+.dark-mode .device-controls button {
+  background: #404040;
+  color: #ffffff;
+  border-color: #505050;
+}
+
+.dark-mode .device-controls button:hover:not(:disabled) {
+  background: #505050;
+}
+
+.dark-mode .add-device-fab {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .add-device-fab:hover {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.dark-mode .add-device-fab:active {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

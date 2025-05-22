@@ -124,71 +124,40 @@ function ManageDevices({
           }}
         >
           {automations.length === 0 ? (
-            <div style={{ color: '#06549b', marginBottom: 12 }}>No automations set.</div>
+            <div style={{ color: '#666', marginBottom: 12 }}>No automations set.</div>
           ) : (
             automations.map((automation, idx) => (
               <div
                 key={automation.name + idx}
-                style={{
-                  background: '#06549b',
-                  color: '#fff',
-                  borderRadius: 10,
-                  padding: 16,
-                  minWidth: 260,
-                  maxWidth: 340,
-                  marginRight: 16,
-                  marginBottom: 16,
-                  maxHeight: 260,
-                  overflowY: 'auto',
-                  boxSizing: 'border-box',
-                }}
+                className="automation-tile"
               >
-                <div style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 8 }}>
+                <div className="automation-title">
                   {automation.name}
                 </div>
-                <table style={{ width: '100%', color: '#fff' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ textAlign: 'left', paddingBottom: 8 }}>Device</th>
-                      <th style={{ textAlign: 'left', paddingBottom: 8 }}>Trigger</th>
-                      <th style={{ textAlign: 'left', paddingBottom: 8 }}>Action</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {automation.actions.map((a, actionIdx) => {
-                      const device = devices.find(d => d.id === a.deviceId);
-                      return (
-                        <tr key={actionIdx}>
-                          <td>{device ? device.name : 'Unknown'}</td>
-                          <td>
-                            {a.triggerType === 'time'
-                              ? `Time: ${a.triggerValue}`
-                              : a.triggerType === 'temperature'
-                              ? `Temp: ${a.triggerValue}°C`
-                              : a.triggerValue}
-                          </td>
-                          <td>
-                            {device && device.type === 'Thermostat'
-                              ? `Set to ${a.targetTemp}°C`
-                              : a.action}
-                          </td>
-                          <td></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                <div className="automation-actions">
+                  {automation.actions.map((a, actionIdx) => {
+                    const device = devices.find(d => d.id === a.deviceId);
+                    return (
+                      <div key={actionIdx} className="automation-action">
+                        <div className="action-device">{device ? device.name : 'Unknown'}</div>
+                        <div className="action-trigger">
+                          {a.triggerType === 'time'
+                            ? `Time: ${a.triggerValue}`
+                            : a.triggerType === 'temperature'
+                            ? `Temp: ${a.triggerValue}°C`
+                            : a.triggerValue}
+                        </div>
+                        <div className="action-type">
+                          {device && device.type === 'Thermostat'
+                            ? `Set to ${a.targetTemp}°C`
+                            : a.action}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
                 <button
-                  style={{
-                    background: '#e53935',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 6,
-                    padding: '4px 10px',
-                    marginTop: 10,
-                    cursor: 'pointer',
-                  }}
+                  className="remove-automation-btn"
                   onClick={() => removeAutomation(idx)}
                 >
                   Remove Automation
@@ -198,7 +167,7 @@ function ManageDevices({
           )}
         </div>
         {automationError && (
-          <div style={{ color: '#e53935', marginTop: 8, maxWidth: 320 }}>{automationError}</div>
+          <div className="automation-error">{automationError}</div>
         )}
       </div>
 
@@ -453,16 +422,20 @@ function AutomationModal({ devices, addAutomation, onClose, setAutomationError, 
           type="button"
           onClick={addActionRow}
           style={{
-            background: '#1a5cff',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
+            background: 'rgba(255, 255, 255, 0.1)',
+            color: '#1a1a1a',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '8px',
             padding: '6px 18px',
             fontSize: '1rem',
             cursor: 'pointer',
             marginBottom: 8,
             width: 180,
-            alignSelf: 'flex-start'
+            alignSelf: 'flex-start',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+            transition: 'all 0.3s ease'
           }}
         >
           + Add Action
@@ -474,13 +447,17 @@ function AutomationModal({ devices, addAutomation, onClose, setAutomationError, 
           <button
             type="submit"
             style={{
-              background: '#1a5cff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
+              background: 'rgba(255, 255, 255, 0.1)',
+              color: '#1a1a1a',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
               padding: '8px 18px',
               fontSize: '1rem',
               cursor: 'pointer',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+              transition: 'all 0.3s ease'
             }}
           >
             Save
@@ -489,13 +466,17 @@ function AutomationModal({ devices, addAutomation, onClose, setAutomationError, 
             type="button"
             onClick={onClose}
             style={{
-              background: '#aaa',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
+              background: 'rgba(255, 255, 255, 0.05)',
+              color: '#1a1a1a',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
               padding: '8px 18px',
               fontSize: '1rem',
               cursor: 'pointer',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
+              transition: 'all 0.3s ease'
             }}
           >
             Cancel

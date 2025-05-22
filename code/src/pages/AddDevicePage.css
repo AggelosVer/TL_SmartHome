@@ -1,54 +1,292 @@
-.add-device-page-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  min-height: 800px;
+.add-device-container {
+  padding: 32px;
   min-width: 1020px;
-  background: #f7faff;
+  min-height: 800px;
+  box-sizing: border-box;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
-.add-device-card {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-  padding: 36px 28px 28px 28px;
-  min-width: 340px;
-  max-width: 420px;
+.add-device-container h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.add-device-container h2::before {
+  content: '📦';
+  font-size: 2rem;
+}
+
+.add-device-form {
+  max-width: 1000px;
+  margin: 0 auto;
   width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-section h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1a1a1a;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #1a5cff;
+  box-shadow: 0 0 0 3px rgba(26, 92, 255, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #999;
+}
+
+.visibility-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.toggle-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.toggle-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-label {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border: 2px solid #eaeaea;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: #ffffff;
 }
-.add-device-card h2 {
-  margin-top: 0;
-  margin-bottom: 24px;
+
+.toggle-option.active .toggle-label {
+  border-color: #1a5cff;
+  background: #e8f0fe;
 }
-.add-device-form {
+
+.toggle-label .icon {
+  font-size: 1.4rem;
+}
+
+.toggle-label .description {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: center;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
   display: flex;
-  flex-direction: column;
   gap: 16px;
-  width: 100%;
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid #eaeaea;
 }
-.add-device-form input,
-.add-device-form select {
-  padding: 10px 14px;
-  border-radius: 6px;
-  border: 1px solid #b0c4de;
-  font-size: 1rem;
-  outline: none;
-}
-.add-device-form button {
-  background: #1a5cff;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 0;
-  font-size: 1.1rem;
-  font-weight: 600;
+
+.form-actions button {
+  flex: 1;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.add-device-form button:hover {
-  background: #0d3fa6;
+
+.form-actions button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.form-actions button:hover::before {
+  opacity: 1;
+}
+
+.add-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #1a1a1a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.add-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.add-button:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cancel-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #1a1a1a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.cancel-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.cancel-button:active {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+/* Dark mode styles */
+.dark-mode .add-device-container {
+  background: #1a1a1a;
+}
+
+.dark-mode .add-device-container h2 {
+  color: #ffffff;
+}
+
+.dark-mode .form-section h3 {
+  color: #ffffff;
+  border-bottom-color: #404040;
+}
+
+.dark-mode .form-group label {
+  color: #ffffff;
+}
+
+.dark-mode .form-group input,
+.dark-mode .form-group select {
+  background: #1f1f1f;
+  border-color: #404040;
+  color: #ffffff;
+}
+
+.dark-mode .form-group input::placeholder {
+  color: #666;
+}
+
+.dark-mode .form-group input:focus,
+.dark-mode .form-group select:focus {
+  border-color: #1a5cff;
+  box-shadow: 0 0 0 3px rgba(26, 92, 255, 0.2);
+}
+
+.dark-mode .toggle-label {
+  background: #1f1f1f;
+  border-color: #404040;
+  color: #ffffff;
+}
+
+.dark-mode .toggle-option.active .toggle-label {
+  background: rgba(26, 92, 255, 0.1);
+}
+
+.dark-mode .toggle-label .description {
+  color: #999;
+}
+
+.dark-mode .form-actions {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .form-actions button {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.dark-mode .add-button {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .add-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.dark-mode .add-button:active {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .cancel-button {
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.dark-mode .cancel-button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.dark-mode .cancel-button:active {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 } 

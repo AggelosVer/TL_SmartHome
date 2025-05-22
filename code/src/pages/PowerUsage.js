@@ -251,6 +251,7 @@ function PowerUsage({ devices }) {
           <div style={{ height: 200, width: '100%' }}>
             <Line data={lineChartData} options={lineChartOptions} />
           </div>
+          <div style={{ borderBottom: '1px solid #ddd', marginTop: 8 }}></div>
         </div>
 
         {/* Device Information Section */}
