@@ -6,7 +6,7 @@ A desktop React application for managing a smart home system. The app provides t
 - Homepage: Overview and quick controls for devices (lights, thermostat, door, alarm, camera, etc.)
 - Manage Devices: Add, edit, or remove smart devices and automations
 - Alert History: View a log of alerts and events
-- Power Usage: Visualize energy consumption and reward the user
+- Power Usage: Visualize energy consumption and motivate the user
 - Help: Access help and support information
 - Guest Mode: Toggle guest access with limited controls
 
