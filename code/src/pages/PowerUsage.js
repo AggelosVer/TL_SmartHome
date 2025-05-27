@@ -339,7 +339,7 @@ function PowerUsage({ devices }) {
         </div>
         <div style={{ display: 'flex', gap: 32 }}>
           <div style={{ flex: 1 }}>
-            <h3>Power Usage by Device Type</h3>
+            <h3>Power consumption by Device Type</h3>
             <div style={{ height: 250 }}>
               <Pie data={pieChartData} options={pieChartOptions} />
             </div>
@@ -350,14 +350,16 @@ function PowerUsage({ devices }) {
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left', padding: 8, width: '60%' }}>Device Type</th>
-                  <th style={{ textAlign: 'right', padding: 8, paddingRight: 32, width: '40%' }}>Power Usage</th>
+                  <th style={{ textAlign: 'right', padding: 8, paddingRight: 32, width: '40%' }}>Power Usage (kW)</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(deviceTypeTotals).map(([type, usage]) => (
                   <tr key={type}>
                     <td style={{ padding: 4 }}>{type}</td>
-                    <td style={{ textAlign: 'right', padding: 4, paddingRight: 32 }}>{usage} watts</td>
+                    <td style={{ textAlign: 'right', padding: 4, paddingRight: 32 }}>
+                      {(usage / 1000).toFixed(3)} kW
+                    </td>
                   </tr>
                 ))}
               </tbody>
