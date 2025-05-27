@@ -8,25 +8,19 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointE
 const getStoredPowerHistory = () => {
   const stored = localStorage.getItem('powerHistory');
   if (stored) {
-    const { history, timestamps } = JSON.parse(stored);
-    // Only keep data from the last hour
-    const oneHourAgo = Date.now() - (60 * 60 * 1000);
-    const validData = timestamps.map((time, index) => ({
-      time: new Date(time).getTime(),
-      value: history[index]
-    })).filter(item => item.time > oneHourAgo);
-
-    return {
-      history: validData.map(item => item.value),
-      timestamps: validData.map(item => new Date(item.time).toLocaleTimeString())
-    };
+    const { history, timestamps, deviceSnapshots } = JSON.parse(stored);
+    return { history, timestamps, deviceSnapshots: deviceSnapshots || [] };
   }
-  return { history: [], timestamps: [] };
+  return { history: [], timestamps: [], deviceSnapshots: [] };
 };
 
 function PowerUsage({ devices }) {
   const [powerHistory, setPowerHistory] = useState(() => getStoredPowerHistory().history);
   const [timestamps, setTimestamps] = useState(() => getStoredPowerHistory().timestamps);
+  const [deviceSnapshots, setDeviceSnapshots] = useState(() => getStoredPowerHistory().deviceSnapshots);
+  const [selectedRange, setSelectedRange] = useState('day'); // default to 'day'
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
 
   // Calculate total power usage
   const totalPowerUsage = devices.reduce((total, device) => total + device.getCurrentPowerUsage(), 0);
@@ -46,7 +40,7 @@ function PowerUsage({ devices }) {
       message: 'Multiple Lights On'
     },
     thermostatExtreme: {
-      active: devices.some(d => 
+      active: devices.some(d =>
         d.type === 'Thermostat' && (d.functionState > 25 || d.functionState < 18)
       ),
       severity: 'high',
@@ -54,7 +48,7 @@ function PowerUsage({ devices }) {
       message: 'Extreme Thermostat Setting'
     },
     doorsUnlocked: {
-      active: devices.some(d => 
+      active: devices.some(d =>
         d.type === 'Door' && d.functionState === 'unlocked'
       ),
       severity: 'low',
@@ -62,7 +56,7 @@ function PowerUsage({ devices }) {
       message: 'Doors Unlocked'
     },
     cameraRecording: {
-      active: devices.some(d => 
+      active: devices.some(d =>
         d.type === 'Camera' && d.functionState === 'recording'
       ),
       severity: 'medium',
@@ -77,7 +71,6 @@ function PowerUsage({ devices }) {
     let totalWeight = 0;
     let activeWeight = 0;
 
-    // Calculate total possible weight and active weight
     Object.values(powerWarnings).forEach(warning => {
       totalWeight += warning.weight;
       if (warning.active) {
@@ -85,7 +78,6 @@ function PowerUsage({ devices }) {
       }
     });
 
-    // Calculate score based on active weight percentage
     if (totalWeight > 0) {
       const weightPercentage = (activeWeight / totalWeight) * 100;
       score = Math.max(0, 100 - weightPercentage);
@@ -96,11 +88,11 @@ function PowerUsage({ devices }) {
 
   const powerScore = calculatePowerScore();
   const getScoreColor = (score) => {
-    if (score >= 80) return '#4CAF50'; // Green - Excellent
-    if (score >= 60) return '#8BC34A'; // Light Green - Good
-    if (score >= 40) return '#FFC107'; // Yellow - Fair
-    if (score >= 20) return '#FF9800'; // Orange - Poor
-    return '#F44336'; // Red - Critical
+    if (score >= 80) return '#4CAF50';
+    if (score >= 60) return '#8BC34A';
+    if (score >= 40) return '#FFC107';
+    if (score >= 20) return '#FF9800';
+    return '#F44336';
   };
 
   const getScoreMessage = (score) => {
@@ -115,47 +107,113 @@ function PowerUsage({ devices }) {
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
-      const timeString = now.toLocaleTimeString();
-      
       setPowerHistory(prev => {
         const newHistory = [...prev, totalPowerUsage];
-        // Keep only last 720 data points (1 hour of data at 5-second intervals)
-        return newHistory.slice(-720);
+        return newHistory.slice(-518400);
       });
-      
       setTimestamps(prev => {
-        const newTimestamps = [...prev, timeString];
-        return newTimestamps.slice(-720);
+        const newTimestamps = [...prev, now.toISOString()];
+        return newTimestamps.slice(-518400);
+      });
+      setDeviceSnapshots(prev => {
+        const snapshot = devices.map(d => ({
+          type: d.type,
+          functionState: d.functionState,
+          powerUsage: d.getCurrentPowerUsage()
+        }));
+        return [...prev, snapshot].slice(-518400);
       });
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [totalPowerUsage]);
+  }, [totalPowerUsage, devices]);
 
   // Save to localStorage whenever history updates
   useEffect(() => {
     localStorage.setItem('powerHistory', JSON.stringify({
       history: powerHistory,
-      timestamps: timestamps.map(time => new Date().toDateString() + ' ' + time)
+      timestamps: timestamps,
+      deviceSnapshots: deviceSnapshots
     }));
-  }, [powerHistory, timestamps]);
+  }, [powerHistory, timestamps, deviceSnapshots]);
 
-  // Calculate power usage by device type
-  const powerByType = devices.reduce((acc, device) => {
-    const type = device.type;
-    if (!acc[type]) {
-      acc[type] = 0;
+  // Helper to get ms for each range
+  const rangeToMs = {
+    hour: 60 * 60 * 1000,
+    day: 24 * 60 * 60 * 1000,
+    month: 30 * 24 * 60 * 60 * 1000,
+  };
+
+  // Filter data based on selection
+  const now = Date.now();
+  let filtered = [];
+  if (selectedRange === 'custom' && customStart && customEnd) {
+    const start = new Date(customStart).getTime();
+    const end = new Date(customEnd).getTime();
+    filtered = powerHistory
+      .map((value, idx) => ({
+        value,
+        time: new Date(timestamps[idx]).getTime(),
+        snapshot: deviceSnapshots[idx]
+      }))
+      .filter(item => item.time >= start && item.time <= end);
+  } else if (selectedRange === 'day' && customStart) {
+    // Show all data for the selected day
+    const dayStart = new Date(customStart);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(customStart);
+    dayEnd.setHours(23, 59, 59, 999);
+    filtered = powerHistory
+      .map((value, idx) => ({
+        value,
+        time: new Date(timestamps[idx]).getTime(),
+        snapshot: deviceSnapshots[idx]
+      }))
+      .filter(item => item.time >= dayStart.getTime() && item.time <= dayEnd.getTime());
+  } else if (selectedRange === 'month' && customStart) {
+    // Show all data for the selected month
+    const monthStart = new Date(customStart);
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    const monthEnd = new Date(customStart);
+    monthEnd.setMonth(monthEnd.getMonth() + 1, 0);
+    monthEnd.setHours(23, 59, 59, 999);
+    filtered = powerHistory
+      .map((value, idx) => ({
+        value,
+        time: new Date(timestamps[idx]).getTime(),
+        snapshot: deviceSnapshots[idx]
+      }))
+      .filter(item => item.time >= monthStart.getTime() && item.time <= monthEnd.getTime());
+  } else {
+    // Default: last hour/day/month from now
+    filtered = powerHistory
+      .map((value, idx) => ({
+        value,
+        time: new Date(timestamps[idx]).getTime(),
+        snapshot: deviceSnapshots[idx]
+      }))
+      .filter(item => item.time > now - rangeToMs[selectedRange]);
+  }
+  const filteredHistory = filtered.map(item => item.value);
+  const filteredTimestamps = filtered.map(item => new Date(item.time).toLocaleString());
+
+  // Pie chart: aggregate device type usage over the filtered range
+  const pieTypeTotals = {};
+  filtered.forEach(item => {
+    if (item.snapshot) {
+      item.snapshot.forEach(d => {
+        if (!pieTypeTotals[d.type]) pieTypeTotals[d.type] = 0;
+        pieTypeTotals[d.type] += d.powerUsage;
+      });
     }
-    acc[type] += device.getCurrentPowerUsage();
-    return acc;
-  }, {});
+  });
 
-  // Prepare data for pie chart
   const pieChartData = {
-    labels: Object.keys(powerByType),
+    labels: Object.keys(pieTypeTotals),
     datasets: [
       {
-        data: Object.values(powerByType),
+        data: Object.values(pieTypeTotals),
         backgroundColor: [
           '#FF6384',
           '#36A2EB',
@@ -167,17 +225,24 @@ function PowerUsage({ devices }) {
     ],
   };
 
-  // Get the last 5 minutes of data (60 points at 5-second intervals)
-  const recentHistory = powerHistory.slice(-60);
-  const recentTimestamps = timestamps.slice(-60);
+  // Device details table for filtered range
+  const deviceTypeTotals = {};
+  filtered.forEach(item => {
+    if (item.snapshot) {
+      item.snapshot.forEach(d => {
+        if (!deviceTypeTotals[d.type]) deviceTypeTotals[d.type] = 0;
+        deviceTypeTotals[d.type] += d.powerUsage;
+      });
+    }
+  });
 
   // Prepare data for line chart
   const lineChartData = {
-    labels: recentTimestamps,
+    labels: filteredTimestamps,
     datasets: [
       {
         label: 'Total Power Usage (watts)',
-        data: recentHistory,
+        data: filteredHistory,
         borderColor: '#4BC0C0',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         tension: 0.4,
@@ -189,49 +254,30 @@ function PowerUsage({ devices }) {
   const lineChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: {
-      duration: 0 // Disable animation for smoother updates
-    },
+    animation: { duration: 0 },
     plugins: {
-      legend: {
-        position: 'top',
-      },
+      legend: { position: 'top' },
       title: {
         display: true,
-        text: 'Live Power Usage (Last 5 Minutes)',
+        text: 'Power Usage (Selected Range)',
       },
     },
     scales: {
       y: {
         beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Watts'
-        }
+        title: { display: true, text: 'Watts' }
       },
       x: {
-        title: {
-          display: true,
-          text: 'Time'
-        },
-        ticks: {
-          maxRotation: 0,
-          autoSkip: true,
-          maxTicksLimit: 6
-        }
+        title: { display: true, text: 'Time' },
+        ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 }
       }
     },
   };
 
   const pieChartOptions = {
     plugins: {
-      legend: {
-        position: 'right',
-      },
-      title: {
-        display: true,
-        text: 'Power Usage by Device Type',
-      },
+      legend: { position: 'right' },
+      title: { display: true, text: 'Power Usage by Device Type (Selected Range)' },
     },
   };
 
@@ -239,13 +285,51 @@ function PowerUsage({ devices }) {
     <div style={{ padding: 32, display: 'flex', gap: 32 }}>
       <div style={{ flex: 1 }}>
         <h2>Power Usage</h2>
-        
-        {/* Live Graph Section - Full Width */}
+        <div style={{ marginBottom: 16 }}>
+          <label>Show data for: </label>
+          <select value={selectedRange} onChange={e => setSelectedRange(e.target.value)}>
+            <option value="hour">Last Hour</option>
+            <option value="day">Specific Day</option>
+            <option value="month">Specific Month</option>
+            <option value="custom">Custom Range</option>
+          </select>
+          {selectedRange === 'day' && (
+            <input
+              type="date"
+              value={customStart}
+              onChange={e => setCustomStart(e.target.value)}
+              style={{ marginLeft: 8 }}
+            />
+          )}
+          {selectedRange === 'month' && (
+            <input
+              type="month"
+              value={customStart}
+              onChange={e => setCustomStart(e.target.value)}
+              style={{ marginLeft: 8 }}
+            />
+          )}
+          {selectedRange === 'custom' && (
+            <span style={{ marginLeft: 8 }}>
+              <input
+                type="datetime-local"
+                value={customStart}
+                onChange={e => setCustomStart(e.target.value)}
+              />
+              <span style={{ margin: '0 8px' }}>to</span>
+              <input
+                type="datetime-local"
+                value={customEnd}
+                onChange={e => setCustomEnd(e.target.value)}
+              />
+            </span>
+          )}
+        </div>
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
-            <h3 style={{ margin: 0 }}>Live Power Usage</h3>
+            <h3 style={{ margin: 0 }}>Power Usage Over Time</h3>
             <div style={{ fontSize: 18, fontWeight: 'bold', color: '#4BC0C0' }}>
-              {totalPowerUsage} watts
+              {filteredHistory.length > 0 ? filteredHistory[filteredHistory.length - 1] : 0} watts
             </div>
           </div>
           <div style={{ height: 200, width: '100%' }}>
@@ -253,8 +337,6 @@ function PowerUsage({ devices }) {
           </div>
           <div style={{ borderBottom: '1px solid #ddd', marginTop: 8 }}></div>
         </div>
-
-        {/* Device Information Section */}
         <div style={{ display: 'flex', gap: 32 }}>
           <div style={{ flex: 1 }}>
             <h3>Power Usage by Device Type</h3>
@@ -262,7 +344,6 @@ function PowerUsage({ devices }) {
               <Pie data={pieChartData} options={pieChartOptions} />
             </div>
           </div>
-
           <div style={{ flex: 1 }}>
             <h3>Device Details</h3>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -273,7 +354,7 @@ function PowerUsage({ devices }) {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(powerByType).map(([type, usage]) => (
+                {Object.entries(deviceTypeTotals).map(([type, usage]) => (
                   <tr key={type}>
                     <td style={{ padding: 4 }}>{type}</td>
                     <td style={{ textAlign: 'right', padding: 4, paddingRight: 32 }}>{usage} watts</td>
@@ -284,15 +365,11 @@ function PowerUsage({ devices }) {
           </div>
         </div>
       </div>
-
-      {/* Power Summary Section */}
       <div style={{ width: 300, borderLeft: '1px solid #ddd', paddingLeft: 32 }}>
         <h3>Power Summary</h3>
-        
-        {/* Power Score */}
-        <div style={{ 
-          marginBottom: 24, 
-          padding: 16, 
+        <div style={{
+          marginBottom: 24,
+          padding: 16,
           backgroundColor: getScoreColor(powerScore),
           color: 'white',
           borderRadius: 8,
@@ -302,18 +379,16 @@ function PowerUsage({ devices }) {
           <div style={{ fontSize: 48, fontWeight: 'bold' }}>{powerScore}</div>
           <div style={{ fontSize: 18, marginTop: 8 }}>{getScoreMessage(powerScore)}</div>
         </div>
-
-        {/* Warnings */}
         <div style={{ marginBottom: 24 }}>
           <h4>Warnings</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {Object.entries(powerWarnings).some(([_, warning]) => warning.active) ? (
               <>
-                {Object.entries(powerWarnings).map(([key, warning]) => 
+                {Object.entries(powerWarnings).map(([key, warning]) =>
                   warning.active && (
-                    <div key={key} style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <div key={key} style={{
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: 8,
                       color: '#F44336'
                     }}>
@@ -324,9 +399,9 @@ function PowerUsage({ devices }) {
                 )}
               </>
             ) : (
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
                 gap: 8,
                 color: '#4CAF50'
               }}>
@@ -336,8 +411,6 @@ function PowerUsage({ devices }) {
             )}
           </div>
         </div>
-
-        {/* Recommendations */}
         <div>
           <h4>Recommendations</h4>
           {Object.entries(powerWarnings).some(([_, warning]) => warning.active) ? (
@@ -359,4 +432,4 @@ function PowerUsage({ devices }) {
   );
 }
 
-export default PowerUsage; 
+export default PowerUsage;
