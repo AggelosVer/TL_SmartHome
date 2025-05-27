@@ -8,7 +8,10 @@ A desktop React application for managing a smart home system. The app provides t
 - Alert History: View a log of alerts and events
 - Power Usage: Visualize energy consumption and motivate the user
 - Help: Access help and support information
-- Guest Mode: Toggle guest access with limited controls
+- Guest Mode: Toggle guest access with limited controls 
+
+## Note
+- Admin Password : 123
 
 ## Getting Started
 
