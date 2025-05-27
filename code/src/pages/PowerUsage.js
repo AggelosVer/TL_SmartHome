@@ -281,13 +281,25 @@ function PowerUsage({ devices }) {
     },
   };
 
+  const isDark = document.body.classList.contains('dark-mode');
+  const inputStyle = {
+    background: isDark ? '#2d2d2d' : '#fff',
+    color: isDark ? '#fff' : '#1a1a1a',
+    border: `1px solid ${isDark ? '#404040' : '#b0c4de'}`,
+    borderRadius: 6,
+    padding: '6px 12px',
+    marginLeft: 8,
+    fontSize: '1rem',
+    transition: 'all 0.2s',
+  };
+
   return (
     <div style={{ padding: 32, display: 'flex', gap: 32 }}>
       <div style={{ flex: 1 }}>
         <h2>Power Usage</h2>
         <div style={{ marginBottom: 16 }}>
           <label>Show data for: </label>
-          <select value={selectedRange} onChange={e => setSelectedRange(e.target.value)}>
+          <select value={selectedRange} onChange={e => setSelectedRange(e.target.value)} style={inputStyle}>
             <option value="hour">Last Hour</option>
             <option value="day">Specific Day</option>
             <option value="month">Specific Month</option>
@@ -298,7 +310,7 @@ function PowerUsage({ devices }) {
               type="date"
               value={customStart}
               onChange={e => setCustomStart(e.target.value)}
-              style={{ marginLeft: 8 }}
+              style={inputStyle}
             />
           )}
           {selectedRange === 'month' && (
@@ -306,26 +318,28 @@ function PowerUsage({ devices }) {
               type="month"
               value={customStart}
               onChange={e => setCustomStart(e.target.value)}
-              style={{ marginLeft: 8 }}
+              style={inputStyle}
             />
           )}
           {selectedRange === 'custom' && (
-            <span style={{ marginLeft: 8 }}>
+            <span>
               <input
                 type="datetime-local"
                 value={customStart}
                 onChange={e => setCustomStart(e.target.value)}
+                style={inputStyle}
               />
               <span style={{ margin: '0 8px' }}>to</span>
               <input
                 type="datetime-local"
                 value={customEnd}
                 onChange={e => setCustomEnd(e.target.value)}
+                style={inputStyle}
               />
             </span>
           )}
         </div>
-        <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
             <h3 style={{ margin: 0 }}>Power Usage Over Time</h3>
             <div style={{ fontSize: 18, fontWeight: 'bold', color: '#4BC0C0' }}>
@@ -337,15 +351,15 @@ function PowerUsage({ devices }) {
           </div>
           <div style={{ borderBottom: '1px solid #ddd', marginTop: 8 }}></div>
         </div>
-        <div style={{ display: 'flex', gap: 32 }}>
+        <div style={{ display: 'flex', gap: 32, marginTop: -24 }}>
           <div style={{ flex: 1 }}>
-            <h3>Power consumption by Device Type</h3>
+            <h3 style={{ marginTop: 0 }}>Power consumption by Device Type</h3>
             <div style={{ height: 250 }}>
               <Pie data={pieChartData} options={pieChartOptions} />
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <h3>Device Details</h3>
+            <h3 style={{ marginTop: 0 }}>Device Details</h3>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>

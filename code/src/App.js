@@ -370,6 +370,15 @@ const setThermostat = (id, temp) => {
   };
 
   const removeDevice = (id) => {
+  // Check if this device is used in any automation
+  const usedInAutomation = automations.some(automation =>
+    automation.actions.some(action => action.deviceId === id)
+  );
+  if (usedInAutomation) {
+    window.alert('This device is used in an automation. Please delete the automation(s) first.');
+    return;
+  }
+
   setDevices((prev) => {
     const deviceToRemove = prev.find((d) => d.id === id);
     if (deviceToRemove) {
