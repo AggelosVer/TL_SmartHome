@@ -224,7 +224,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* Dark mode styles */
 .dark-mode .manage-devices-container {
   background: #1a1a1a;
 }
@@ -296,7 +295,6 @@
   background: #505050;
 }
 
-/* Automation Styles */
 .automation-tile {
   background: #ffffff;
   color: #1a1a1a;
@@ -322,7 +320,7 @@
 .automation-title {
   font-size: 1.2rem;
   font-weight: 600;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: #1a1a1a;
 }
 
@@ -331,7 +329,8 @@
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  margin-bottom: 16px;
+  margin-top: 6px;
+  margin-bottom: 12px;
 }
 
 .automation-action {
@@ -382,7 +381,6 @@
   font-size: 0.95rem;
 }
 
-/* Dark mode styles for automations */
 .dark-mode .automation-tile {
   background: #2d2d2d;
   color: #ffffff;
@@ -423,7 +421,7 @@
   background: #4a2f2f;
 }
 
-/* Dark mode styles for add-device-form */
+
 .dark-mode .add-device-form button {
   background: rgba(255, 255, 255, 0.05);
   color: #ffffff;
@@ -457,3 +455,195 @@
   background: rgba(255, 255, 255, 0.12);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 } 
+
+.automation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.automation-form {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 24px; 
+  width: 400px; 
+  max-height: 80vh; 
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 16px; 
+  overflow-y: auto; 
+}
+
+.dark-mode .automation-form {
+  background: #2d2d2d;
+  color: #ffffff;
+  border-color: #404040;
+}
+
+.automation-title {
+  margin: 0;
+  color: #06549b;
+  font-size: 1.2rem; 
+}
+
+.dark-mode .automation-title {
+  color: #ffffff;
+}
+
+.automation-input,
+.automation-select,
+.automation-time-input,
+.automation-temp-input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #b0c4de;
+  width: 100%;
+  font-size: 0.95rem; 
+}
+
+.dark-mode .automation-input,
+.dark-mode .automation-select,
+.dark-mode .automation-time-input,
+.dark-mode .automation-temp-input {
+  background: #1f1f1f;
+  color: #ffffff;
+  border-color: #404040;
+}
+
+.automation-time-input {
+  width: 120px;
+  padding: 6px; 
+  font-size: 0.9rem; 
+  border-radius: 6px;
+  border: 1px solid #b0c4de;
+}
+
+.dark-mode .automation-time-input {
+  background: #1f1f1f;
+  color: #ffffff;
+  border-color: #404040;
+}
+
+.automation-action-row {
+  border: 1px solid #b0c4de;
+  border-radius: 8px;
+  padding: 12px; 
+  margin-bottom: 12px; 
+  background: #f7faff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; 
+}
+
+.dark-mode .automation-action-row {
+  background: #404040;
+  border-color: #505050;
+}
+
+.remove-action-button {
+  margin-top: 8px; 
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.add-action-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 16px; 
+  font-size: 0.95rem; 
+  cursor: pointer;
+  margin-bottom: 12px; 
+  width: 180px; 
+}
+
+.dark-mode .add-action-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.automation-conflict-msg {
+  color: #e53935;
+  font-size: 0.95rem; 
+  margin-top: -8px;
+}
+
+.automation-buttons {
+  display: flex;
+  gap: 12px; 
+  margin-top: 12px; 
+}
+
+.save-button,
+.cancel-button {
+  padding: 10px 16px; 
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem; 
+}
+
+.save-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cancel-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .save-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .cancel-button {
+  background: rgba(255, 255, 255, 0.02);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.automation-action-select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #b0c4de;
+  width: 100%;
+  font-size: 0.95rem;
+  background: #ffffff;
+  color: #1a1a1a;
+  transition: all 0.2s ease;
+}
+
+.automation-action-select:focus {
+  outline: none;
+  border-color: #1a5cff;
+  box-shadow: 0 0 0 3px rgba(26, 92, 255, 0.1);
+}
+
+.dark-mode .automation-action-select {
+  background: #1f1f1f;
+  color: #ffffff;
+  border-color: #404040; 
+}
+
+.dark-mode .automation-action-select:focus {
+  border-color: #1a5cff;
+  box-shadow: 0 0 0 3px rgba(26, 92, 255, 0.2);
+}

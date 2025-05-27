@@ -193,63 +193,24 @@ function AutomationModal({ devices, addAutomation, onClose, setAutomationError, 
   ]);
   const [conflictMsg, setConflictMsg] = useState('');
 
-  // Add new action row
   const addActionRow = () => {
     setActions([...actions, { deviceId: '', action: '', triggerType: 'time', triggerValue: '', tempValue: '', targetTemp: '' }]);
   };
 
-  // Remove action row
   const removeActionRow = (idx) => {
     setActions(actions.filter((_, i) => i !== idx));
   };
 
-  // Update action row
   const updateAction = (idx, field, value) => {
-    setActions(actions.map((a, i) => i === idx ? { ...a, [field]: value } : a));
+    setActions(actions.map((a, i) => (i === idx ? { ...a, [field]: value } : a)));
   };
 
-  // Enhanced duplicate/conflict check
-  const checkConflicts = (automation) => {
-    // Check for duplicate actions within the same automation
-    for (let i = 0; i < automation.actions.length; i++) {
-      const a1 = automation.actions[i];
-      for (let j = i + 1; j < automation.actions.length; j++) {
-        const a2 = automation.actions[j];
-        if (
-          a1.deviceId === a2.deviceId &&
-          a1.triggerType === a2.triggerType &&
-          a1.triggerValue === a2.triggerValue &&
-          a1.action === a2.action
-        ) {
-          return 'Duplicate action (same device, trigger, and action) within this automation.';
-        }
-      }
-    }
-    // Check for duplicate actions across all automations
-    for (const existingAutomation of automations) {
-      for (const existingAction of existingAutomation.actions) {
-        for (const newAction of automation.actions) {
-          if (
-            existingAction.deviceId === newAction.deviceId &&
-            existingAction.triggerType === newAction.triggerType &&
-            existingAction.triggerValue === newAction.triggerValue &&
-            existingAction.action === newAction.action
-          ) {
-            return 'An automation with the same device, trigger, and action already exists.';
-          }
-        }
-      }
-    }
-    return '';
-  };
-
-  // Handle submit
   const handleSubmit = (e) => {
     e.preventDefault();
     if (
       !name.trim() ||
-      actions.some(a => {
-        const selectedDevice = devices.find(d => d.id.toString() === a.deviceId);
+      actions.some((a) => {
+        const selectedDevice = devices.find((d) => d.id.toString() === a.deviceId);
         if (!a.deviceId) return true;
         if (selectedDevice && selectedDevice.type === 'Thermostat') {
           return !a.triggerValue || !a.targetTemp;
@@ -261,34 +222,28 @@ function AutomationModal({ devices, addAutomation, onClose, setAutomationError, 
       setConflictMsg('Please fill all fields for each action.');
       return;
     }
-    const formattedActions = actions.map(a => {
-      const selectedDevice = devices.find(d => d.id.toString() === a.deviceId);
+
+    const formattedActions = actions.map((a) => {
+      const selectedDevice = devices.find((d) => d.id.toString() === a.deviceId);
       if (selectedDevice && selectedDevice.type === 'Thermostat') {
         return {
           deviceId: Number(a.deviceId),
           action: 'set temperature',
           triggerType: 'time',
           triggerValue: a.triggerValue,
-          targetTemp: Number(a.targetTemp)
+          targetTemp: Number(a.targetTemp),
         };
       } else {
         return {
           deviceId: Number(a.deviceId),
           action: a.action,
           triggerType: 'time',
-          triggerValue: a.triggerValue
+          triggerValue: a.triggerValue,
         };
       }
     });
+
     const automation = { name, actions: formattedActions };
-
-    // Conflict check
-    const conflict = checkConflicts(automation);
-    if (conflict) {
-      setConflictMsg(conflict);
-      return;
-    }
-
     const success = addAutomation(automation);
     if (success) {
       setConflictMsg('');
@@ -297,74 +252,61 @@ function AutomationModal({ devices, addAutomation, onClose, setAutomationError, 
   };
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-    }}>
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          background: '#fff',
-          borderRadius: 10,
-          padding: 32,
-          minWidth: 400,
-          boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
-        }}
-      >
-        <h3 style={{ margin: 0, color: '#06549b' }}>Add Automation</h3>
+    <div className="automation-modal">
+      <form className="automation-form" onSubmit={handleSubmit}>
+        <h3 className="automation-title">Add Automation</h3>
         <label>
           Automation Name:
           <input
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
             required
-            style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #b0c4de', width: 220 }}
+            className="automation-input"
           />
         </label>
         {actions.map((a, idx) => {
-          const selectedDevice = devices.find(d => d.id.toString() === a.deviceId);
+          const selectedDevice = devices.find((d) => d.id.toString() === a.deviceId);
           const isThermostat = selectedDevice && selectedDevice.type === 'Thermostat';
           return (
-            <div key={idx} style={{ border: '1px solid #b0c4de', borderRadius: 8, padding: 10, marginBottom: 8, background: '#f7faff' }}>
+            <div key={idx} className="automation-action-row">
               <label>
                 Device:
                 <select
                   value={a.deviceId}
-                  onChange={e => updateAction(idx, 'deviceId', e.target.value)}
+                  onChange={(e) => updateAction(idx, 'deviceId', e.target.value)}
                   required
-                  style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #b0c4de' }}
+                  className="automation-select"
                 >
                   <option value="">Select Device</option>
-                  {devices.map(d => (
-                    <option key={d.id} value={d.id}>{d.name} ({d.type})</option>
+                  {devices.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} ({d.type})
+                    </option>
                   ))}
                 </select>
               </label>
               {selectedDevice && isThermostat && (
                 <>
-                  <label style={{ marginLeft: 12 }}>
+                  <label>
                     Time:
                     <input
                       type="time"
                       value={a.triggerValue}
-                      onChange={e => updateAction(idx, 'triggerValue', e.target.value)}
+                      onChange={(e) => updateAction(idx, 'triggerValue', e.target.value)}
                       required
-                      style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #b0c4de', width: 120 }}
+                      className="automation-time-input"
                     />
                   </label>
-                  <label style={{ marginLeft: 12 }}>
+                  <label>
                     Set To:
                     <input
                       type="number"
                       min="10"
                       max="30"
                       value={a.targetTemp || ''}
-                      onChange={e => updateAction(idx, 'targetTemp', e.target.value)}
+                      onChange={(e) => updateAction(idx, 'targetTemp', e.target.value)}
                       required
-                      style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #b0c4de', width: 80 }}
+                      className="automation-temp-input"
                       placeholder="°C"
                     />
                   </label>
@@ -372,28 +314,30 @@ function AutomationModal({ devices, addAutomation, onClose, setAutomationError, 
               )}
               {selectedDevice && !isThermostat && (
                 <>
-                  <label style={{ marginLeft: 12 }}>
+                  <label>
                     Action:
                     <select
                       value={a.action}
-                      onChange={e => updateAction(idx, 'action', e.target.value)}
+                      onChange={(e) => updateAction(idx, 'action', e.target.value)}
                       required
-                      style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #b0c4de' }}
+                      className="automation-action-select"
                     >
                       <option value="">Select Action</option>
-                      {ACTIONS_BY_TYPE[selectedDevice.type].map(act => (
-                        <option key={act} value={act}>{act}</option>
+                      {ACTIONS_BY_TYPE[selectedDevice.type].map((act) => (
+                        <option key={act} value={act}>
+                          {act}
+                        </option>
                       ))}
                     </select>
                   </label>
-                  <label style={{ marginLeft: 12 }}>
+                  <label>
                     Time:
                     <input
                       type="time"
                       value={a.triggerValue}
-                      onChange={e => updateAction(idx, 'triggerValue', e.target.value)}
+                      onChange={(e) => updateAction(idx, 'triggerValue', e.target.value)}
                       required
-                      style={{ marginLeft: 8, padding: 6, borderRadius: 6, border: '1px solid #b0c4de', width: 120 }}
+                      className="automation-time-input"
                     />
                   </label>
                 </>
@@ -402,15 +346,7 @@ function AutomationModal({ devices, addAutomation, onClose, setAutomationError, 
                 <button
                   type="button"
                   onClick={() => removeActionRow(idx)}
-                  style={{
-                    marginLeft: 16,
-                    background: '#e53935',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 6,
-                    padding: '4px 10px',
-                    cursor: 'pointer',
-                  }}
+                  className="remove-action-button"
                 >
                   Remove
                 </button>
@@ -418,67 +354,15 @@ function AutomationModal({ devices, addAutomation, onClose, setAutomationError, 
             </div>
           );
         })}
-        <button
-          type="button"
-          onClick={addActionRow}
-          style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            color: '#1a1a1a',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '8px',
-            padding: '6px 18px',
-            fontSize: '1rem',
-            cursor: 'pointer',
-            marginBottom: 8,
-            width: 180,
-            alignSelf: 'flex-start',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-            transition: 'all 0.3s ease'
-          }}
-        >
+        <button type="button" onClick={addActionRow} className="add-action-button">
           + Add Action
         </button>
-        {conflictMsg && (
-          <div style={{ color: '#e53935', fontSize: 15, marginTop: -8 }}>{conflictMsg}</div>
-        )}
-        <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-          <button
-            type="submit"
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              color: '#1a1a1a',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '8px',
-              padding: '8px 18px',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-              transition: 'all 0.3s ease'
-            }}
-          >
+        {conflictMsg && <div className="automation-conflict-msg">{conflictMsg}</div>}
+        <div className="automation-buttons">
+          <button type="submit" className="save-button">
             Save
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              color: '#1a1a1a',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '8px',
-              padding: '8px 18px',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
-              transition: 'all 0.3s ease'
-            }}
-          >
+          <button type="button" onClick={onClose} className="cancel-button">
             Cancel
           </button>
         </div>
