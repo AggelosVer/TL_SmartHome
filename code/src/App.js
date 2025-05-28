@@ -615,7 +615,7 @@ useEffect(() => {
                 />
               } />
               <Route path="/alerts" element={<AlertHistory alerts={alerts} setAlerts={setAlerts} guestMode={guestMode} />} />
-              <Route path="/power" element={<PowerUsage devices={devices} />} />
+              <Route path="/power" element={<PowerUsage devices={devices} darkMode={darkMode} />} />
               <Route path="/help" element={<Help />} />
               <Route path="/add-device" element={
                 <AddDevicePage addDevice={addDevice} deviceTypes={DEVICE_TYPES} />
